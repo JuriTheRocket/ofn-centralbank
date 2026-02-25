@@ -2028,52 +2028,45 @@ async function loadLatestJsonSnapshot() {
     }
 
     async function boot(){
-    $("#datasetSel").value = ui.dataset;
-    $("#modeSel").value = ui.mode;
-    populateInstruments();
+        $("#datasetSel").value = ui.dataset;
+        $("#modeSel").value = ui.mode;
+        populateInstruments();
 
-    setToggle($("#gridToggle"), ui.showGrid);
-    setToggle($("#labelsToggle"), ui.showLabels);
-    setToggle($("#crossToggle"), ui.showCross);
+        setToggle($("#gridToggle"), ui.showGrid);
+        setToggle($("#labelsToggle"), ui.showLabels);
+        setToggle($("#crossToggle"), ui.showCross);
 
-    warmup();
+        warmup();
 
-    const onResize = ()=>{
-      resizeCanvasToDisplaySize();
+        const onResize = ()=>{
+          resizeCanvasToDisplaySize();
+          view.default = null;
+          hideTooltip();
+          render();
+        };
+        window.addEventListener("resize", onResize);
+        resizeCanvasToDisplaySize();
+
+        updateCompareVisibility();
+        render();
+
+        // FX laden (optional live)
+      await loadRealFx();
       view.default = null;
       hideTooltip();
       render();
-    };
-    window.addEventListener("resize", onResize);
-    resizeCanvasToDisplaySize();
 
-    updateCompareVisibility();
-    render();
+      // latest.json Snapshot (optional)
+      await loadLatestJsonSnapshot();
+      setInterval(loadLatestJsonSnapshot, 2 * 60 * 1000);
 
-    // FX laden (optional live)
-    await loadRealFx();
-    view.default = null;
-    hideTooltip();
-    render();
-
-    // latest.json Snapshot (optional)
-    await loadLatestJsonSnapshot();
-    setInterval(loadLatestJsonSnapshot, 2 * 60 * 1000);
-
-    setInterval(()=>{
-      if (!engine.frozen && engine.dataStatus.startsWith("LIVE")) appendFxNowcastBars();
-      tick();
-    }, engine.tickMs);
-  }
-
-  boot().catch(err => {
-    console.error("Boot failed:", err);
-    // Optional: sichtbar machen
-    $("#pillData").textContent = "DATA: ERROR";
+      setInterval(()=>{
+        if (!engine.frozen && engine.dataStatus.startsWith("LIVE")) appendFxNowcastBars();
+        tick();
+      }, engine.tickMs);
+    }
 
     boot();
   </script>
 </body>
 </html>
-
-

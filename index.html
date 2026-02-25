@@ -630,8 +630,8 @@
     const baseSeed = 811733;
     let R = mulberry32(baseSeed);
 
-    // 2-minute cadence
     const UPDATE_MS = 2 * 60 * 1000;
+    const LATEST_URL = "./latest.json";
 
     const engine = {
       tickMs: UPDATE_MS,
@@ -693,7 +693,7 @@
     const datasets = {
       fx: {
         label: "Top currencies (FX)", unit:"rate",
-        intervalMs: UPDATE_MS, // intraday nowcast cadence (anchored to last real close)
+        intervalMs: UPDATE_MS,
         instruments: [
           { key:"EURUSD", name:"EUR/USD", base:1.085, vol:0.0018 },
           { key:"GBPUSD", name:"GBP/USD", base:1.270, vol:0.0020 },
@@ -873,10 +873,9 @@
 
       const now = roundDownToCadence(Date.now());
       const candidate = (bars.length ? bars[bars.length-1].ts + obj.intervalMs : now);
-      const ts = Math.min(candidate, now); // never in the future
+      const ts = Math.min(candidate, now);
 
       if (bars.length && ts === bars[bars.length-1].ts){
-        // already have this timestamp slot; nudge the last candle (keeps "no future", avoids duplicates)
         const b = bars[bars.length-1];
         b.h = Math.max(b.h, hi);
         b.l = Math.min(b.l, lo);
@@ -905,6 +904,43 @@
           arr.push({ ts: now, v });
           if (arr.length > 320) arr.shift();
         }
+      }
+    }
+
+    // --- latest.json feed integration ---
+    async function loadLatestJsonSnapshot(){
+      try{
+        const res = await fetch(`${LATEST_URL}?t=${Date.now()}`, { cache: "no-store" });
+        if (!res.ok) throw new Error("latest.json fetch failed");
+        const snap = await res.json();
+
+        if (snap.macro){
+          engine.s.stress = Number(snap.macro.stress ?? engine.s.stress);
+          engine.s.liquidity = Number(snap.macro.liquidity ?? engine.s.liquidity);
+          engine.s.policy = Number(snap.macro.policy_rate ?? engine.s.policy);
+          engine.s.infl = Number(snap.macro.inflation ?? engine.s.infl);
+          engine.s.outputGap = Number(snap.macro.output_gap ?? engine.s.outputGap);
+          engine.s.riskRegime = String(snap.macro.risk_regime ?? engine.s.riskRegime);
+        }
+
+        if (snap.ofn?.members && Array.isArray(snap.ofn.members) && snap.ofn.members.length){
+          ofnMembers.length = 0;
+          for (const m of snap.ofn.members){
+            if (!m?.name) continue;
+            ofnMembers.push({ name: String(m.name), gni: Number(m.gni ?? 0) });
+          }
+        }
+
+        if (snap.fx?.derived_pairs_close){
+          const pairs = snap.fx.derived_pairs_close;
+          for (const inst of datasets.fx.instruments){
+            if (pairs[inst.key] != null) inst.base = Number(pairs[inst.key]);
+          }
+        }
+
+        engine.dataStatus = snap.fx ? "LIVE(FX)+LOCAL(JSON)" : "LOCAL(JSON)";
+      } catch (_){
+        // ignore and keep current behavior
       }
     }
 
@@ -973,16 +1009,13 @@
 
     function computeDynamicMinScaleX(frame, bars){
       const total = Math.max(2, bars.length);
-      // At minimum zoom-out, the view shows exactly the data window with no extra void.
       return frame.w / total;
     }
 
     function enforceBounds(frame, bars){
-      // enforce minimum zoom-out so user can't "leave the chart" by zooming out
       const dynMinX = computeDynamicMinScaleX(frame, bars);
       view.scaleX = clamp(view.scaleX, dynMinX, view.maxScaleX);
 
-      // X pan bounds (no empty left/right space)
       const lastIdx = bars.length - 1;
       const worldLeft = (frame.x - view.offsetX) / view.scaleX;
       const worldRight = (frame.x + frame.w - view.offsetX) / view.scaleX;
@@ -1024,7 +1057,6 @@
     }
 
     function zoomAt(frame, bars, px, py, zoomFactor){
-      // Stable zoom: lock world-point under cursor, then re-solve offsets
       const before = screenToWorld(px, py);
 
       const dynMinX = computeDynamicMinScaleX(frame, bars);
@@ -1201,7 +1233,7 @@
     function subBarsForBar(parentBar, parentIndex, subCount, intervalMs){
       if (subCount <= 1) return [{
         idx: parentIndex + 0.5,
-        ts: parentBar.ts + intervalMs/2,
+        ts: Math.min(parentBar.ts + intervalMs/2, roundDownToCadence(Date.now())),
         ...parentBar
       }];
 
@@ -1257,7 +1289,6 @@
 
       ctx.save();
 
-      // LINE mode: draw line through closes (densified when zoomed)
       if (mode === "line"){
         ctx.globalAlpha = 0.88;
         ctx.lineWidth = 2;
@@ -1290,7 +1321,6 @@
         return;
       }
 
-      // Candle/OHLC
       for (let i=0;i<bars.length;i++){
         const b = bars[i];
         const xS = worldToScreen(i, 0).px;
@@ -1476,7 +1506,7 @@
       drawOverlayMemberLines(frame, bars);
       drawCrosshair(frame, bars);
 
-      updateHud(bars, inst, ds, obj);
+      updateHud(bars, inst, ds);
 
       ctx.save();
       ctx.strokeStyle = cssVar("--line2");
@@ -1485,7 +1515,7 @@
       ctx.restore();
     }
 
-    function updateHud(bars, inst, ds, obj){
+    function updateHud(bars, inst, ds){
       const last = bars[bars.length-1];
       const prev = bars[bars.length-2] ?? last;
       const d = last.c - prev.c;
@@ -1511,7 +1541,6 @@
 
       $("#pillLive").textContent = engine.frozen ? "FROZEN" : "LIVE";
       $("#pillLive").style.borderColor = engine.frozen ? "rgba(230,69,69,.55)" : "rgba(46,108,255,.35)";
-
       $("#pillData").textContent = `DATA: ${engine.dataStatus}`;
 
       const b = computeOfnBudget();
@@ -1623,7 +1652,6 @@
     const tooltip = $("#tooltip");
     const ttTitle = $("#ttTitle");
     const ttBody = $("#ttBody");
-
     function hideTooltip(){ tooltip.style.display = "none"; }
 
     function showTooltip(px, py, title, body){
@@ -1671,49 +1699,7 @@
       return { idx, bar: bars[idx], sub: sb, intervalMs: obj.intervalMs, subCount };
     }
 
-    const LATEST_URL = "./latest.json";
-
-async function loadLatestJsonSnapshot() {
-  try {
-    const res = await fetch(`${LATEST_URL}?t=${Date.now()}`, { cache: "no-store" });
-    if (!res.ok) throw new Error("latest.json fetch failed");
-    const snap = await res.json();
-
-    // apply MACRO snapshot
-    if (snap.macro) {
-      engine.s.stress = Number(snap.macro.stress ?? engine.s.stress);
-      engine.s.liquidity = Number(snap.macro.liquidity ?? engine.s.liquidity);
-      engine.s.policy = Number(snap.macro.policy_rate ?? engine.s.policy);
-      engine.s.infl = Number(snap.macro.inflation ?? engine.s.infl);
-      engine.s.outputGap = Number(snap.macro.output_gap ?? engine.s.outputGap);
-      engine.s.riskRegime = String(snap.macro.risk_regime ?? engine.s.riskRegime);
-    }
-
-    // apply OFN member list (optional: if you want the JSON to override)
-    if (snap.ofn?.members && Array.isArray(snap.ofn.members) && snap.ofn.members.length) {
-      ofnMembers.length = 0;
-      for (const m of snap.ofn.members) {
-        if (!m?.name) continue;
-        ofnMembers.push({ name: String(m.name), gni: Number(m.gni ?? 0) });
-      }
-    }
-
-    // apply FX (optional override) — sets the “base” close used by nowcast
-    if (snap.fx?.derived_pairs_close) {
-      const pairs = snap.fx.derived_pairs_close;
-      for (const inst of datasets.fx.instruments) {
-        if (pairs[inst.key] != null) inst.base = Number(pairs[inst.key]);
-      }
-    }
-
-    engine.dataStatus = snap.fx ? "LIVE(FX)+LOCAL(JSON)" : "LOCAL(JSON)";
-  } catch (_) {
-    // If latest.json doesn't exist yet or fails, keep current behavior
-  }
-}
-    
     function hitTestObject(frame, dsKey, inst, obj, mx, my){
-      const bars = obj.bars;
       const w = screenToWorld(mx, my);
       const info = nearestBarAndSub(dsKey, inst.key, w.x);
 
@@ -1724,12 +1710,8 @@ async function loadLatestJsonSnapshot() {
       const yH = worldToScreen(0, info.sub.h).py;
       const yL = worldToScreen(0, info.sub.l).py;
 
-      // Must be inside frame
       if (!(mx >= frame.x && mx <= frame.x + frame.w && my >= frame.y && my <= frame.y + frame.h)) return null;
 
-      // Object-only rule:
-      // - For candle/ohlc: click must be near the bar column and within high-low range
-      // - For line: must be near the close point
       if (ui.mode === "line"){
         const yC = worldToScreen(0, info.sub.c).py;
         const dist = Math.hypot(mx - xPx, my - yC);
@@ -1769,13 +1751,12 @@ async function loadLatestJsonSnapshot() {
         const ds = datasets[ui.dataset];
         const inst = ds.instruments[ui.instrumentIdx];
         const obj = store.get(seriesKey(ui.dataset, inst.key));
-        const bars = obj.bars;
         const frame = drawFrame();
 
         const mx = (e.clientX - rect.left) * (canvas.width / canvas.clientWidth);
         const my = (e.clientY - rect.top) * (canvas.height / canvas.clientHeight);
 
-        panBy(frame, bars, mx - lastMx, my - lastMy);
+        panBy(frame, obj.bars, mx - lastMx, my - lastMy);
         lastMx = mx; lastMy = my;
 
         hideTooltip();
@@ -1794,13 +1775,12 @@ async function loadLatestJsonSnapshot() {
       const ds = datasets[ui.dataset];
       const inst = ds.instruments[ui.instrumentIdx];
       const obj = store.get(seriesKey(ui.dataset, inst.key));
-      const bars = obj.bars;
       const frame = drawFrame();
 
       const delta = Math.sign(e.deltaY);
       const zoomFactor = delta > 0 ? 0.90 : 1.12;
 
-      zoomAt(frame, bars, mx, my, zoomFactor);
+      zoomAt(frame, obj.bars, mx, my, zoomFactor);
       hideTooltip();
       render();
     }, {passive:false});
@@ -1831,7 +1811,6 @@ async function loadLatestJsonSnapshot() {
       const ds = datasets[ui.dataset];
       const inst = ds.instruments[ui.instrumentIdx];
       const obj = store.get(seriesKey(ui.dataset, inst.key));
-      const bars = obj.bars;
       const frame = drawFrame();
 
       const rect = canvas.getBoundingClientRect();
@@ -1876,9 +1855,7 @@ async function loadLatestJsonSnapshot() {
       }
     }
 
-    function warmup(){
-      simulateTicks(90);
-    }
+    function warmup(){ simulateTicks(90); }
 
     function tick(){
       if (engine.frozen){
@@ -1925,8 +1902,6 @@ async function loadLatestJsonSnapshot() {
     }
 
     function appendFxNowcastBars(){
-      // For each FX instrument, extend from last real daily candle up to "now" using 2-minute cadence,
-      // anchored to last close. No future timestamps.
       const now = roundDownToCadence(Date.now());
 
       for (const inst of datasets.fx.instruments){
@@ -1938,10 +1913,7 @@ async function loadLatestJsonSnapshot() {
         if (!bars.length) continue;
 
         let last = bars[bars.length-1];
-        let ts = last.ts;
-
-        // if last is ahead (shouldn't happen), clamp
-        ts = Math.min(ts, now);
+        let ts = Math.min(last.ts, now);
 
         while (ts + UPDATE_MS <= now){
           const nextTs = ts + UPDATE_MS;
@@ -2004,7 +1976,6 @@ async function loadLatestJsonSnapshot() {
           const key = seriesKey("fx", inst.key);
           const pr = mulberry32(baseSeed + inst.key.length*9991);
 
-          // Store daily as base history; then nowcast will extend intraday (every 2 min) up to now.
           store.set(key, {
             pr,
             bars: ohlc.slice(-240),
@@ -2021,44 +1992,45 @@ async function loadLatestJsonSnapshot() {
       } catch (_){
         engine.dataStatus = "DEMO";
       }
-      $("#pillData").textContent = `DATA: ${engine.dataStatus}`;
+
       if (engine.dataStatus.startsWith("LIVE")){
         appendFxNowcastBars();
       }
     }
 
-    async function boot(){
-        $("#datasetSel").value = ui.dataset;
-        $("#modeSel").value = ui.mode;
-        populateInstruments();
+    function boot(){
+      $("#datasetSel").value = ui.dataset;
+      $("#modeSel").value = ui.mode;
+      populateInstruments();
 
-        setToggle($("#gridToggle"), ui.showGrid);
-        setToggle($("#labelsToggle"), ui.showLabels);
-        setToggle($("#crossToggle"), ui.showCross);
+      setToggle($("#gridToggle"), ui.showGrid);
+      setToggle($("#labelsToggle"), ui.showLabels);
+      setToggle($("#crossToggle"), ui.showCross);
 
-        warmup();
+      warmup();
 
-        const onResize = ()=>{
-          resizeCanvasToDisplaySize();
-          view.default = null;
-          hideTooltip();
-          render();
-        };
-        window.addEventListener("resize", onResize);
+      const onResize = ()=>{
         resizeCanvasToDisplaySize();
-
-        updateCompareVisibility();
+        view.default = null;
+        hideTooltip();
         render();
+      };
+      window.addEventListener("resize", onResize);
+      resizeCanvasToDisplaySize();
 
-        // FX laden (optional live)
-      await loadRealFx();
-      view.default = null;
-      hideTooltip();
+      updateCompareVisibility();
       render();
 
-      // latest.json Snapshot (optional)
-      await loadLatestJsonSnapshot();
-      setInterval(loadLatestJsonSnapshot, 2 * 60 * 1000);
+      // Load real FX daily (then nowcast)
+      loadRealFx().finally(async ()=>{
+        // Overlay JSON snapshot control (macro, OFN members, optional FX close overrides)
+        await loadLatestJsonSnapshot();
+        setInterval(loadLatestJsonSnapshot, UPDATE_MS);
+
+        view.default = null;
+        hideTooltip();
+        render();
+      });
 
       setInterval(()=>{
         if (!engine.frozen && engine.dataStatus.startsWith("LIVE")) appendFxNowcastBars();

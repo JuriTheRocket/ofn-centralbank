@@ -1,0 +1,1870 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Free Nations Central Bank — Economic Terminal</title>
+  <style>
+    :root{
+      --bg:#e7e9ee;
+      --ui:#cfd3db;
+      --ui2:#bfc5cf;
+      --ui3:#aab2c0;
+      --ink:#0b1020;
+      --muted:rgba(11,16,32,.70);
+      --dim:rgba(11,16,32,.52);
+
+      --line:#2e6cff;
+      --line2:rgba(46,108,255,.35);
+      --hair:rgba(46,108,255,.18);
+
+      --pos:#1f57ff;
+      --neg:#e64545;
+      --mid:#0b1020;
+
+      --chart:#ffffff;
+      --chart2:#f4f6fb;
+
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --radius: 14px;
+    }
+
+    [data-theme="night"]{
+      --bg:#070a12;
+      --ui:rgba(30,34,48,.82);
+      --ui2:rgba(36,42,62,.86);
+      --ui3:rgba(42,50,78,.88);
+      --ink:#f5f7ff;
+      --muted:rgba(245,247,255,.74);
+      --dim:rgba(245,247,255,.52);
+
+      --line:#6ea0ff;
+      --line2:rgba(110,160,255,.35);
+      --hair:rgba(110,160,255,.18);
+
+      --pos:#6ea0ff;
+      --neg:#ff6b6b;
+      --mid:#f5f7ff;
+
+      --chart:#0b0f1c;
+      --chart2:#0a0d17;
+    }
+
+    [data-theme="amber"]{
+      --bg:#f2efe6;
+      --ui:#ded7c4;
+      --ui2:#d1c7ad;
+      --ui3:#c2b694;
+
+      --line:#1e5fff;
+      --line2:rgba(30,95,255,.30);
+      --hair:rgba(30,95,255,.16);
+
+      --pos:#1e5fff;
+      --neg:#db3a3a;
+
+      --chart:#fffdf7;
+      --chart2:#f7f2e5;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0}
+    body{
+      font-family:var(--mono);
+      background: radial-gradient(1200px 820px at 18% 0%, rgba(46,108,255,.10), transparent 55%),
+                  radial-gradient(900px 650px at 92% 0%, rgba(230,69,69,.07), transparent 58%),
+                  linear-gradient(180deg, rgba(0,0,0,.04), rgba(0,0,0,.06)),
+                  var(--bg);
+      color:var(--ink);
+      overflow:hidden;
+    }
+
+    .root{
+      height:100%;
+      width:100%;
+      display:grid;
+      grid-template-columns: 320px 1fr;
+      grid-template-rows: 1fr 88px;
+      gap:10px;
+      padding:10px;
+    }
+
+    @media (max-width: 980px){
+      body{overflow:auto}
+      .root{
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr auto;
+      }
+    }
+
+    .jag{
+      border:1px solid var(--line2);
+      background: linear-gradient(180deg, var(--ui2), var(--ui));
+      box-shadow: 0 18px 45px rgba(0,0,0,.18);
+      overflow:hidden;
+      clip-path: polygon(
+        10px 0%,
+        calc(100% - 10px) 0%,
+        100% 10px,
+        100% calc(100% - 10px),
+        calc(100% - 10px) 100%,
+        10px 100%,
+        0% calc(100% - 10px),
+        0% 10px
+      );
+    }
+
+    .card{
+      border-radius: var(--radius);
+      position:relative;
+      min-height:0;
+    }
+
+    .leftCard{
+      grid-column:1/2;
+      grid-row:1/2;
+      display:flex;
+      flex-direction:column;
+      min-height:0;
+    }
+
+    .leftTop{
+      height:48px;
+      padding:0 12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      border-bottom:1px solid var(--line2);
+      background: linear-gradient(180deg, var(--ui3), var(--ui2));
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+
+    .sig{
+      width:12px;height:12px;
+      background: var(--line);
+      box-shadow: 0 0 0 2px rgba(255,255,255,.45) inset, 0 0 16px rgba(46,108,255,.30);
+      transform: rotate(45deg);
+    }
+
+    .brandText{min-width:0}
+    .brandText .t{
+      font-size:12px;
+      letter-spacing:.9px;
+      text-transform:uppercase;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .brandText .s{
+      margin-top:2px;
+      font-size:11px;
+      color: var(--muted);
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .pill{
+      border:1px solid var(--line2);
+      background: rgba(255,255,255,.35);
+      padding:3px 8px;
+      border-radius:999px;
+    }
+
+    .leftBody{
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      overflow:auto;
+      min-height:0;
+    }
+
+    .group{
+      border:1px solid var(--line2);
+      background: rgba(255,255,255,.30);
+      padding:10px;
+      border-radius: 12px;
+      clip-path: polygon(
+        10px 0%,
+        calc(100% - 10px) 0%,
+        100% 10px,
+        100% calc(100% - 10px),
+        calc(100% - 10px) 100%,
+        10px 100%,
+        0% calc(100% - 10px),
+        0% 10px
+      );
+    }
+
+    .gh{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      color: var(--dim);
+      font-size:11px;
+      letter-spacing:.7px;
+      text-transform:uppercase;
+      margin-bottom:8px;
+    }
+
+    .row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      margin:8px 0;
+    }
+
+    label{
+      width:86px;
+      font-size:12px;
+      color: var(--muted);
+      flex:0 0 auto;
+    }
+
+    select, button{
+      width:100%;
+      font-family:var(--mono);
+      font-size:12px;
+      color: var(--ink);
+      background: rgba(255,255,255,.45);
+      border:1px solid var(--line2);
+      padding:9px 10px;
+      border-radius: 12px;
+      outline:none;
+      clip-path: polygon(
+        10px 0%,
+        calc(100% - 10px) 0%,
+        100% 10px,
+        100% calc(100% - 10px),
+        calc(100% - 10px) 100%,
+        10px 100%,
+        0% calc(100% - 10px),
+        0% 10px
+      );
+    }
+
+    button{
+      cursor:pointer;
+      transition: transform .10s ease, border-color .10s ease, background .10s ease;
+    }
+    button:hover{ transform: translateY(-1px); border-color: rgba(46,108,255,.55); }
+    button:active{ transform: translateY(0px); }
+
+    .btnLine{ border-color: rgba(46,108,255,.60); }
+
+    .kv{
+      display:grid;
+      grid-template-columns: 1fr auto;
+      gap:8px 10px;
+      font-size:12px;
+      color: var(--muted);
+    }
+    .kv .k{ color: var(--dim); }
+    .kv .v{ color: var(--ink); text-align:right; }
+
+    .chartCard{
+      grid-column:2/3;
+      grid-row:1/2;
+      display:flex;
+      flex-direction:column;
+      min-height:0;
+    }
+
+    .chartTop{
+      height:48px;
+      padding:0 12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      border-bottom:1px solid var(--line2);
+      background: linear-gradient(180deg, var(--ui3), var(--ui2));
+      white-space:nowrap;
+    }
+
+    .chartTop .left{
+      display:flex;
+      align-items:baseline;
+      gap:10px;
+      min-width:0;
+    }
+
+    .title{
+      font-size:12px;
+      letter-spacing:.8px;
+      text-transform:uppercase;
+      color: var(--muted);
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width: 60vw;
+    }
+
+    .hud{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      font-size:11px;
+      color: var(--dim);
+    }
+
+    .canvasWrap{
+      flex:1;
+      min-height:0;
+      padding:10px;
+      position:relative;
+    }
+
+    canvas{
+      width:100%;
+      height:100%;
+      display:block;
+      border:1px solid var(--line2);
+      background: radial-gradient(1200px 800px at 18% 0%, rgba(46,108,255,.08), transparent 55%),
+                  linear-gradient(180deg, var(--chart), var(--chart2));
+      border-radius: 12px;
+      clip-path: polygon(
+        10px 0%,
+        calc(100% - 10px) 0%,
+        100% 10px,
+        100% calc(100% - 10px),
+        calc(100% - 10px) 100%,
+        10px 100%,
+        0% calc(100% - 10px),
+        0% 10px
+      );
+    }
+
+    .resetView{
+      position:absolute;
+      top:18px;
+      right:18px;
+      z-index:20;
+      width:auto;
+      padding:8px 10px;
+      border:1px solid var(--line2);
+      background: rgba(255,255,255,.70);
+      color: var(--ink);
+      border-radius: 12px;
+      display:none;
+      cursor:pointer;
+      clip-path: polygon(
+        10px 0%,
+        calc(100% - 10px) 0%,
+        100% 10px,
+        100% calc(100% - 10px),
+        calc(100% - 10px) 100%,
+        10px 100%,
+        0% calc(100% - 10px),
+        0% 10px
+      );
+    }
+
+    .tooltip{
+      position:absolute;
+      z-index:30;
+      display:none;
+      max-width: 320px;
+      background: rgba(255,255,255,.92);
+      border:1px solid var(--line2);
+      color: var(--ink);
+      padding:10px 10px;
+      border-radius: 12px;
+      box-shadow: 0 18px 45px rgba(0,0,0,.22);
+      pointer-events:none;
+      clip-path: polygon(
+        10px 0%,
+        calc(100% - 10px) 0%,
+        100% 10px,
+        100% calc(100% - 10px),
+        calc(100% - 10px) 100%,
+        10px 100%,
+        0% calc(100% - 10px),
+        0% 10px
+      );
+    }
+    .tooltip .k{
+      font-size:11px;
+      color: var(--dim);
+      text-transform:uppercase;
+      letter-spacing:.7px;
+      margin-bottom:6px;
+    }
+    .tooltip .v{
+      font-size:12px;
+      color: var(--ink);
+      line-height:1.35;
+      white-space:pre-line;
+    }
+
+    .bottomCard{
+      grid-column:1/3;
+      grid-row:2/3;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:12px;
+      gap:10px;
+    }
+
+    .bottomLeft, .bottomRight{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .tiny{
+      font-size:11px;
+      color: var(--dim);
+    }
+
+    .toggle{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:8px 10px;
+      border:1px solid var(--line2);
+      background: rgba(255,255,255,.35);
+      cursor:pointer;
+      user-select:none;
+      border-radius: 12px;
+      clip-path: polygon(
+        10px 0%,
+        calc(100% - 10px) 0%,
+        100% 10px,
+        100% calc(100% - 10px),
+        calc(100% - 10px) 100%,
+        10px 100%,
+        0% calc(100% - 10px),
+        0% 10px
+      );
+    }
+
+    .sw{
+      width:34px;height:18px;
+      border-radius:999px;
+      border:1px solid var(--line2);
+      background: rgba(255,255,255,.40);
+      position:relative;
+    }
+
+    .sw:after{
+      content:"";
+      position:absolute;
+      top:50%;
+      left:2px;
+      width:14px;height:14px;
+      transform: translateY(-50%);
+      border-radius:50%;
+      background: rgba(11,16,32,.20);
+      border:1px solid rgba(11,16,32,.12);
+      transition: left .14s ease, background .14s ease;
+    }
+
+    .toggle.on .sw:after{
+      left:18px;
+      background: rgba(46,108,255,.32);
+      border-color: rgba(46,108,255,.22);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="root">
+    <div class="card jag leftCard">
+      <div class="leftTop">
+        <div class="brand">
+          <div class="sig" aria-hidden="true"></div>
+          <div class="brandText">
+            <div class="t">FN-CB Economic Terminal</div>
+            <div class="s">
+              <span class="pill" id="pillLive">LIVE</span>
+              <span class="pill" id="pillData">DATA: —</span>
+            </div>
+          </div>
+        </div>
+        <div class="pill" id="pillMode">CANDLE</div>
+      </div>
+
+      <div class="leftBody">
+        <div class="group">
+          <div class="gh"><span>Market</span><span id="clockMini">—</span></div>
+
+          <div class="row">
+            <label>Dataset</label>
+            <select id="datasetSel">
+              <option value="fx">Top currencies (FX)</option>
+              <option value="gdp">Top GDP (index)</option>
+              <option value="ofn_budget">OFN income</option>
+              <option value="ofn_contrib">OFN contributions</option>
+              <option value="risk">Risk & conditions</option>
+            </select>
+          </div>
+
+          <div class="row">
+            <label>Instrument</label>
+            <select id="instrumentSel"></select>
+          </div>
+
+          <div class="row">
+            <label>Chart</label>
+            <select id="modeSel">
+              <option value="candle">Candlesticks</option>
+              <option value="ohlc">OHLC Bars</option>
+            </select>
+          </div>
+
+          <div class="row" id="compareRow" style="display:none;">
+            <label>Compare</label>
+            <select id="compareSel">
+              <option value="off">Off</option>
+              <option value="members">OFN members (overlay)</option>
+            </select>
+          </div>
+
+          <div class="row">
+            <label>Feed</label>
+            <button id="freezeBtn" class="btnLine">Freeze / Resume</button>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="gh"><span>Diagnostics</span><span>Macro</span></div>
+          <div class="kv">
+            <div class="k">Stress</div><div class="v" id="kStress">—</div>
+            <div class="k">Liquidity</div><div class="v" id="kLiq">—</div>
+            <div class="k">Policy</div><div class="v" id="kPol">—</div>
+            <div class="k">Inflation</div><div class="v" id="kInfl">—</div>
+            <div class="k">OFN income</div><div class="v" id="kOfn">—</div>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="gh"><span>Navigation</span><span>Mouse</span></div>
+          <div class="kv">
+            <div class="k">Wheel</div><div class="v">Zoom</div>
+            <div class="k">Drag</div><div class="v">Pan</div>
+            <div class="k">Click</div><div class="v">Tooltip</div>
+            <div class="k">Double-click</div><div class="v">Reset view</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card jag chartCard">
+      <div class="chartTop">
+        <div class="left">
+          <div class="pill" id="pillReg">REG: —</div>
+          <div class="title" id="seriesTitle">—</div>
+        </div>
+        <div class="hud">
+          <span>LAST <span id="lastVal">—</span></span>
+          <span>Δ <span id="deltaVal">—</span></span>
+          <span>VOL <span id="volVal">—</span></span>
+          <span id="clock">—</span>
+        </div>
+      </div>
+
+      <div class="canvasWrap" id="canvasWrap">
+        <button class="resetView" id="resetViewBtn">Reset view</button>
+        <div class="tooltip" id="tooltip">
+          <div class="k" id="ttTitle">—</div>
+          <div class="v" id="ttBody">—</div>
+        </div>
+        <canvas id="chart" width="1600" height="900"></canvas>
+      </div>
+    </div>
+
+    <div class="card jag bottomCard">
+      <div class="bottomLeft">
+        <span class="tiny">Theme</span>
+        <select id="themeSel" style="width:220px">
+          <option value="default">Official (light)</option>
+          <option value="night">Night terminal</option>
+          <option value="amber">Amber</option>
+        </select>
+
+        <div class="toggle on" id="gridToggle"><div class="sw"></div><div class="tiny">Grid</div></div>
+        <div class="toggle on" id="labelsToggle"><div class="sw"></div><div class="tiny">Labels</div></div>
+        <div class="toggle on" id="crossToggle"><div class="sw"></div><div class="tiny">Crosshair</div></div>
+      </div>
+
+      <div class="bottomRight">
+        <span class="tiny">Pan is bounded to available history; zoom deeper to reveal intra-bar candles.</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const $ = (q, el=document) => el.querySelector(q);
+    const clamp = (x,a,b)=>Math.max(a,Math.min(b,x));
+    const lerp  = (a,b,t)=>a+(b-a)*t;
+
+    const fmt = {
+      n(x,d=2){ return Number(x).toFixed(d); },
+      sign(x,d=2){
+        const v = Number(x);
+        const s = v>0 ? "+" : v<0 ? "−" : "";
+        return s + Math.abs(v).toFixed(d);
+      }
+    };
+
+    function mulberry32(a){
+      return function(){
+        let t = a += 0x6D2B79F5;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    const baseSeed = 811733;
+    let R = mulberry32(baseSeed);
+
+    const engine = {
+      tickMs: 900,
+      frozen: false,
+      pendingTicks: 0,
+      t: 0,
+      dataStatus: "DEMO",
+      s: { stress: 36, liquidity: 74, policy: 2.85, infl: 2.70, outputGap: 0.15, riskRegime: "ORDERLY" },
+      ofn: { gniShare: 0.67, vatRate: 0.15 }
+    };
+
+    const ofnMembers = [
+      { name:"Luxembourg", gni: 92 },
+      { name:"Falkland Islands", gni: 3.2 },
+      { name:"Israel", gni: 520 },
+      { name:"USA", gni: 28000 },
+      { name:"Union of Columbia", gni: 4200 },
+      { name:"Commonwealth of Lander", gni: 3100 },
+      { name:"Australia", gni: 1850 },
+      { name:"Philippines", gni: 520 },
+      { name:"Greece", gni: 250 },
+      { name:"Georgia", gni: 27 }
+    ];
+
+    function computeOfnBudget(){
+      const s = engine.s;
+      const stressN = (s.stress - 35)/65;
+      const liqN = (s.liquidity - 70)/60;
+      const totalGNI = ofnMembers.reduce((a,b)=>a+b.gni,0);
+      const baseBudget = clamp(totalGNI * 0.0026, 40, 120);
+      const activity = clamp(1 + s.outputGap*0.10 + liqN*0.05 - stressN*0.08, 0.78, 1.22);
+      const gniPart = baseBudget * engine.ofn.gniShare;
+      const otherPart = baseBudget - gniPart;
+      const vatPart = clamp(otherPart * 0.62 * activity, 6, 40);
+      const customsPart = clamp(otherPart - vatPart, 3, 28) * clamp(1 + liqN*0.12 - stressN*0.12, 0.70, 1.25);
+      const total = gniPart + vatPart + customsPart;
+      return { total, gniPart, vatPart, customsPart, totalGNI };
+    }
+
+    function stepMacro(){
+      const s = engine.s;
+      const shock = (R() > 0.989) ? ((R()-0.5) * 10) : 0;
+      const targetStress = clamp(34 + (s.infl-2.0)*5 + (s.outputGap<0 ? 6 : 0), 10, 88);
+      s.stress = clamp(s.stress + (targetStress - s.stress)*0.07 + shock*0.22, 5, 96);
+      const targetLiq = clamp(78 - (s.stress-35)*0.65, 20, 92);
+      s.liquidity = clamp(s.liquidity + (targetLiq - s.liquidity)*0.08, 10, 98);
+      const ogTarget = clamp(0.20 + (s.liquidity-70)*0.01 - (s.stress-35)*0.012, -1.8, 1.2);
+      s.outputGap = lerp(s.outputGap, ogTarget, 0.06);
+      const inflTarget = clamp(2.0 + s.outputGap*0.30 + (s.stress-35)*0.010, 0.2, 7.5);
+      s.infl = lerp(s.infl, inflTarget, 0.05);
+      const desired = clamp(2.2 + (s.infl-2.0)*0.85 + s.outputGap*0.35, 0.0, 7.0);
+      s.policy = lerp(s.policy, desired, 0.08);
+      s.riskRegime =
+        s.stress>78 ? "FRAGILE" :
+        s.stress>58 ? "DEFENSIVE" :
+        s.stress>42 ? "STABLE" : "ORDERLY";
+    }
+
+    const datasets = {
+      fx: {
+        label: "Top currencies (FX)", unit:"rate",
+        intervalMs: 24*60*60*1000,
+        instruments: [
+          { key:"EURUSD", name:"EUR/USD", base:1.085, vol:0.009 },
+          { key:"GBPUSD", name:"GBP/USD", base:1.270, vol:0.010 },
+          { key:"USDJPY", name:"USD/JPY", base:149.0, vol:0.75 },
+          { key:"USDCHF", name:"USD/CHF", base:0.890, vol:0.007 },
+          { key:"USDCAD", name:"USD/CAD", base:1.355, vol:0.009 },
+          { key:"AUDUSD", name:"AUD/USD", base:0.665, vol:0.010 }
+        ]
+      },
+      gdp: {
+        label: "Top GDP (index)", unit:"index",
+        intervalMs: 7*24*60*60*1000,
+        instruments: [
+          { key:"USA_GDP", name:"USA GDP Index", base:100, vol:1.6 },
+          { key:"CHN_GDP", name:"China GDP Index", base:100, vol:1.9 },
+          { key:"DEU_GDP", name:"Germany GDP Index", base:100, vol:1.2 },
+          { key:"JPN_GDP", name:"Japan GDP Index", base:100, vol:1.0 },
+          { key:"IND_GDP", name:"India GDP Index", base:100, vol:2.2 }
+        ]
+      },
+      ofn_budget: {
+        label: "OFN income", unit:"bnFNU",
+        intervalMs: 6*60*60*1000,
+        instruments: [
+          { key:"OFN_TOTAL", name:"OFN Total Inflow (bn FNU)", base:78, vol:1.8 },
+          { key:"OFN_GNI",   name:"GNI Contributions (bn FNU)", base:52, vol:1.2 },
+          { key:"OFN_VAT",   name:"VAT Resource (bn FNU)", base:18, vol:0.9 },
+          { key:"OFN_CUS",   name:"Customs Duties (bn FNU)", base:10, vol:0.8 }
+        ]
+      },
+      ofn_contrib: {
+        label: "OFN contributions", unit:"bnFNU",
+        intervalMs: 6*60*60*1000,
+        instruments: [
+          { key:"USA", name:"USA Contribution", base:18, vol:0.6 },
+          { key:"Australia", name:"Australia Contribution", base:4.2, vol:0.25 },
+          { key:"Israel", name:"Israel Contribution", base:2.1, vol:0.18 },
+          { key:"Union of Columbia", name:"Union of Columbia Contribution", base:6.8, vol:0.35 },
+          { key:"Commonwealth of Lander", name:"Commonwealth of Lander Contribution", base:5.6, vol:0.30 },
+          { key:"Greece", name:"Greece Contribution", base:1.4, vol:0.16 },
+          { key:"Philippines", name:"Philippines Contribution", base:1.6, vol:0.18 },
+          { key:"Luxembourg", name:"Luxembourg Contribution", base:0.55, vol:0.06 }
+        ]
+      },
+      risk: {
+        label: "Risk & conditions", unit:"index",
+        intervalMs: 3*60*60*1000,
+        instruments: [
+          { key:"FN_STRESS", name:"System Stress Index (0–100)", base:40, vol:3.0 },
+          { key:"FN_LIQ",    name:"Liquidity Conditions (0–100)", base:70, vol:2.7 },
+          { key:"TRADE",     name:"Global Trade Volume Index", base:100, vol:1.4 },
+          { key:"ENERGY",    name:"Energy Pressure Index", base:100, vol:2.0 }
+        ]
+      }
+    };
+
+    function macroFactor(dsKey, instKey){
+      const s = engine.s;
+      const stressN = (s.stress - 35) / 65;
+      const liqN = (s.liquidity - 70) / 60;
+
+      let drift = 0;
+      let volBoost = clamp(stressN*0.55 - liqN*0.15, -0.20, 1.00);
+      let wickBoost = clamp(stressN*0.65, 0.0, 1.20);
+
+      if (dsKey === "fx"){
+        const usdBias = clamp(stressN*0.0020, -0.003, 0.004);
+        if (instKey.includes("USD") && !instKey.startsWith("USD")) drift -= usdBias;
+        if (instKey.startsWith("USD")) drift += usdBias * 120;
+      }
+
+      if (dsKey === "gdp"){
+        const og = engine.s.outputGap * 0.05;
+        const pol = (engine.s.policy - 2.5) * -0.03;
+        drift += (og + pol) * 0.12;
+        wickBoost *= 0.55; volBoost *= 0.55;
+      }
+
+      if (dsKey === "risk"){
+        if (instKey === "FN_STRESS") { drift += (stressN*0.35); volBoost += 0.25; }
+        if (instKey === "FN_LIQ")    { drift += (-stressN*0.30 + liqN*0.15); }
+        if (instKey === "TRADE")     { drift += (-stressN*0.08 + liqN*0.05); wickBoost *= 0.6; }
+        if (instKey === "ENERGY")    { drift += (stressN*0.10); volBoost += 0.15; }
+      }
+
+      if (dsKey === "ofn_budget" || dsKey === "ofn_contrib"){
+        const activity = clamp(1 + (engine.s.outputGap*0.08) + (liqN*0.06) - (stressN*0.10), 0.80, 1.18);
+        drift += (activity-1) * (dsKey === "ofn_contrib" ? 0.18 : 0.35);
+        wickBoost *= 0.65; volBoost *= 0.60;
+      }
+
+      return { drift, volBoost, wickBoost };
+    }
+
+    const store = new Map();
+    const derived = { ofnMemberLines: new Map() };
+    const seriesKey = (ds, inst) => ds + "::" + inst;
+
+    function initSeries(dsKey, inst){
+      const k = seriesKey(dsKey, inst.key);
+      if (store.has(k)) return;
+
+      const seed = baseSeed + (dsKey.length*999) + inst.key.split("").reduce((a,c)=>a+c.charCodeAt(0),0);
+      const pr = mulberry32(seed);
+
+      const ds = datasets[dsKey];
+      const now = Date.now();
+      const bars = [];
+      let last = inst.base;
+
+      for (let i=0;i<260;i++){
+        const macro = macroFactor(dsKey, inst.key);
+        const vol = inst.vol * (1 + macro.volBoost);
+
+        if (dsKey === "ofn_budget"){
+          const b = computeOfnBudget();
+          const targets = { OFN_TOTAL:b.total, OFN_GNI:b.gniPart, OFN_VAT:b.vatPart, OFN_CUS:b.customsPart };
+          last = lerp(last, targets[inst.key] ?? inst.base, 0.10);
+        }
+        if (dsKey === "ofn_contrib"){
+          const b = computeOfnBudget();
+          const totalGNI = ofnMembers.reduce((a,x)=>a+x.gni,0);
+          const m = ofnMembers.find(x=>x.name===inst.key);
+          const target = m ? (b.gniPart * (m.gni/totalGNI)) : inst.base;
+          last = lerp(last, target, 0.12);
+        }
+
+        const o = last;
+        const delta = (pr()-0.5) * vol + macro.drift;
+        const c = clamp(o + delta, inst.base*0.45, inst.base*1.85);
+        const hi = Math.max(o,c) + Math.abs((pr()-0.5) * vol * (1.0 + macro.wickBoost));
+        const lo = Math.min(o,c) - Math.abs((pr()-0.5) * vol * (1.0 + macro.wickBoost));
+
+        const ts = now - (260 - 1 - i) * ds.intervalMs;
+        bars.push({ ts, o, h:hi, l:lo, c });
+
+        last = c;
+      }
+
+      store.set(k, { pr, bars, last, liveLocked: false, intervalMs: ds.intervalMs });
+    }
+
+    function stepSeries(dsKey, inst){
+      initSeries(dsKey, inst);
+      const k = seriesKey(dsKey, inst.key);
+      const obj = store.get(k);
+      if (obj.liveLocked) return;
+
+      const pr = obj.pr;
+      const bars = obj.bars;
+      const macro = macroFactor(dsKey, inst.key);
+      const vol = inst.vol * (1 + macro.volBoost);
+      let lastTarget = obj.last;
+
+      if (dsKey === "ofn_budget"){
+        const b = computeOfnBudget();
+        const targets = { OFN_TOTAL:b.total, OFN_GNI:b.gniPart, OFN_VAT:b.vatPart, OFN_CUS:b.customsPart };
+        lastTarget = lerp(lastTarget, targets[inst.key] ?? inst.base, 0.18);
+      }
+      if (dsKey === "ofn_contrib"){
+        const b = computeOfnBudget();
+        const totalGNI = ofnMembers.reduce((a,x)=>a+x.gni,0);
+        const m = ofnMembers.find(x=>x.name===inst.key);
+        const target = m ? (b.gniPart * (m.gni/totalGNI)) : inst.base;
+        lastTarget = lerp(lastTarget, target, 0.20);
+      }
+
+      const o = obj.last;
+      const delta = (pr()-0.5) * vol + macro.drift*0.35;
+      const c = clamp(lerp(o,lastTarget,0.65) + delta*0.6, inst.base*0.45, inst.base*1.85);
+      const hi = Math.max(o,c) + Math.abs((pr()-0.5) * vol * (0.9 + macro.wickBoost*0.7));
+      const lo = Math.min(o,c) - Math.abs((pr()-0.5) * vol * (0.9 + macro.wickBoost*0.7));
+
+      const ts = (bars.length ? bars[bars.length-1].ts + obj.intervalMs : Date.now());
+      bars.push({ ts, o, h:hi, l:lo, c });
+
+      obj.last = c;
+      if (bars.length>320) bars.shift();
+    }
+
+    function updateDerivedOfnMemberLines(){
+      const b = computeOfnBudget();
+      const totalGNI = ofnMembers.reduce((a,x)=>a+x.gni,0);
+      for (const m of ofnMembers){
+        const v = b.gniPart * (m.gni/totalGNI);
+        if (!derived.ofnMemberLines.has(m.name)) derived.ofnMemberLines.set(m.name, []);
+        const arr = derived.ofnMemberLines.get(m.name);
+        arr.push({ ts: Date.now(), v });
+        if (arr.length > 320) arr.shift();
+      }
+    }
+
+    const ui = {
+      dataset: "fx",
+      instrumentIdx: 0,
+      mode: "candle",
+      compare: "off",
+      showGrid: true,
+      showLabels: true,
+      showCross: true
+    };
+
+    function populateInstruments(){
+      const ds = datasets[ui.dataset];
+      $("#instrumentSel").innerHTML = ds.instruments.map((x,i)=>`<option value="${i}">${x.name}</option>`).join("");
+      ui.instrumentIdx = clamp(ui.instrumentIdx, 0, ds.instruments.length-1);
+      $("#instrumentSel").value = String(ui.instrumentIdx);
+    }
+
+    function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+    const canvas = $("#chart");
+    const ctx = canvas.getContext("2d");
+
+    const view = {
+      scaleX: 1,
+      scaleY: 1,
+      offsetX: 0,
+      offsetY: 0,
+      default: null,
+      minScaleX: 6, maxScaleX: 500,
+      minScaleY: 6, maxScaleY: 500
+    };
+
+    function drawFrame(){
+      const pad = 14;
+      const rightAxisW = 108;
+      const bottomAxisH = 54;
+      const x = pad;
+      const y = pad;
+      const w = canvas.width - pad*2 - rightAxisW;
+      const h = canvas.height - pad*2 - bottomAxisH;
+
+      ctx.save();
+      ctx.strokeStyle = cssVar("--line2");
+      ctx.globalAlpha = 0.95;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x, y, w, h);
+      ctx.restore();
+
+      return {x,y,w,h,rightAxisW,bottomAxisH};
+    }
+
+    function worldToScreen(x, y){
+      const px = view.offsetX + x * view.scaleX;
+      const py = view.offsetY - y * view.scaleY;
+      return {px,py};
+    }
+
+    function screenToWorld(px, py){
+      const x = (px - view.offsetX) / view.scaleX;
+      const y = (view.offsetY - py) / view.scaleY;
+      return {x,y};
+    }
+
+    function setDefaultView(frame, bars){
+      const N = bars.length;
+      const show = Math.min(160, N);
+      const start = N - show;
+      const end = N - 1;
+
+      let yMin = Infinity, yMax = -Infinity;
+      for (let i=start;i<N;i++){
+        yMin = Math.min(yMin, bars[i].l);
+        yMax = Math.max(yMax, bars[i].h);
+      }
+      const pad = (yMax-yMin)*0.10 || 1;
+      yMin -= pad; yMax += pad;
+
+      const worldW = (end - start + 1);
+      const worldH = (yMax - yMin);
+
+      view.scaleX = clamp(frame.w / worldW, view.minScaleX, view.maxScaleX);
+      view.scaleY = clamp(frame.h / worldH, view.minScaleY, view.maxScaleY);
+      view.offsetX = frame.x - start * view.scaleX;
+      view.offsetY = frame.y + (yMax * view.scaleY);
+
+      view.default = { scaleX:view.scaleX, scaleY:view.scaleY, offsetX:view.offsetX, offsetY:view.offsetY };
+      enforcePanBounds(frame, bars);
+      updateResetViewButton(frame, bars);
+    }
+
+    function enforcePanBounds(frame, bars){
+      const lastIdx = bars.length - 1;
+      const worldLeft = (frame.x - view.offsetX) / view.scaleX;
+      const worldRight = (frame.x + frame.w - view.offsetX) / view.scaleX;
+
+      if (worldLeft < 0){
+        view.offsetX = frame.x - 0 * view.scaleX;
+      }
+      if (worldRight > (lastIdx + 1)){
+        view.offsetX = frame.x + frame.w - (lastIdx + 1) * view.scaleX;
+      }
+    }
+
+    function zoomAt(frame, bars, px, py, zoomFactor){
+      const before = screenToWorld(px, py);
+      view.scaleX = clamp(view.scaleX * zoomFactor, view.minScaleX, view.maxScaleX);
+      view.scaleY = clamp(view.scaleY * zoomFactor, view.minScaleY, view.maxScaleY);
+      const after = screenToWorld(px, py);
+      view.offsetX += (after.x - before.x) * view.scaleX;
+      view.offsetY -= (after.y - before.y) * view.scaleY;
+
+      enforcePanBounds(frame, bars);
+      updateResetViewButton(frame, bars);
+    }
+
+    function panBy(frame, bars, dx, dy){
+      view.offsetX += dx;
+      view.offsetY += dy;
+
+      enforcePanBounds(frame, bars);
+      updateResetViewButton(frame, bars);
+    }
+
+    function resetViewToDefault(frame, bars){
+      if (!view.default) return;
+      view.scaleX = view.default.scaleX;
+      view.scaleY = view.default.scaleY;
+      view.offsetX = view.default.offsetX;
+      view.offsetY = view.default.offsetY;
+      enforcePanBounds(frame, bars);
+      updateResetViewButton(frame, bars);
+    }
+
+    function updateResetViewButton(frame, bars){
+      const btn = $("#resetViewBtn");
+      if (!view.default){ btn.style.display="none"; return; }
+      const eps = 1e-2;
+      const changed =
+        Math.abs(view.scaleX - view.default.scaleX) > eps ||
+        Math.abs(view.scaleY - view.default.scaleY) > eps ||
+        Math.abs(view.offsetX - view.default.offsetX) > 0.8 ||
+        Math.abs(view.offsetY - view.default.offsetY) > 0.8;
+      btn.style.display = changed ? "block" : "none";
+    }
+
+    function niceStep(raw){
+      if (raw <= 0) return 1;
+      const exp = Math.floor(Math.log10(raw));
+      const f = raw / Math.pow(10, exp);
+      let nf = 1;
+      if (f < 1.5) nf = 1;
+      else if (f < 3.2) nf = 2;
+      else if (f < 7.2) nf = 5;
+      else nf = 10;
+      return nf * Math.pow(10, exp);
+    }
+
+    function formatAxisTime(ts, density){
+      const d = new Date(ts);
+      if (density >= 2) return d.toLocaleString(undefined,{ month:"short", day:"2-digit", hour:"2-digit", minute:"2-digit" });
+      return d.toLocaleDateString(undefined,{ year:"numeric", month:"short", day:"2-digit" });
+    }
+
+    function drawGrid(frame, bars){
+      if (!ui.showGrid) return;
+
+      const worldLeft = (frame.x - view.offsetX) / view.scaleX;
+      const worldRight = (frame.x + frame.w - view.offsetX) / view.scaleX;
+      const worldTop = (view.offsetY - frame.y) / view.scaleY;
+      const worldBottom = (view.offsetY - (frame.y + frame.h)) / view.scaleY;
+
+      const targetPxMajor = 92;
+      const targetPxMinor = 18;
+
+      const stepXMajor = niceStep(targetPxMajor / view.scaleX);
+      const stepYMajor = niceStep(targetPxMajor / view.scaleY);
+      const stepXMinor = niceStep(targetPxMinor / view.scaleX);
+      const stepYMinor = niceStep(targetPxMinor / view.scaleY);
+
+      const hair = cssVar("--hair");
+      const line2 = cssVar("--line2");
+
+      ctx.save();
+      ctx.lineWidth = 1;
+
+      ctx.strokeStyle = hair;
+      ctx.globalAlpha = 0.9;
+
+      let x0 = Math.floor(worldLeft / stepXMinor) * stepXMinor;
+      for (let xw = x0; xw <= worldRight; xw += stepXMinor){
+        const {px} = worldToScreen(xw, 0);
+        if (px < frame.x || px > frame.x + frame.w) continue;
+        ctx.beginPath();
+        ctx.moveTo(px, frame.y);
+        ctx.lineTo(px, frame.y + frame.h);
+        ctx.stroke();
+      }
+
+      let y0 = Math.floor(worldBottom / stepYMinor) * stepYMinor;
+      for (let yw = y0; yw <= worldTop; yw += stepYMinor){
+        const {py} = worldToScreen(0, yw);
+        if (py < frame.y || py > frame.y + frame.h) continue;
+        ctx.beginPath();
+        ctx.moveTo(frame.x, py);
+        ctx.lineTo(frame.x + frame.w, py);
+        ctx.stroke();
+      }
+
+      ctx.strokeStyle = line2;
+      ctx.globalAlpha = 0.95;
+
+      x0 = Math.floor(worldLeft / stepXMajor) * stepXMajor;
+      for (let xw = x0; xw <= worldRight; xw += stepXMajor){
+        const {px} = worldToScreen(xw, 0);
+        if (px < frame.x || px > frame.x + frame.w) continue;
+        ctx.beginPath();
+        ctx.moveTo(px, frame.y);
+        ctx.lineTo(px, frame.y + frame.h);
+        ctx.stroke();
+      }
+
+      y0 = Math.floor(worldBottom / stepYMajor) * stepYMajor;
+      for (let yw = y0; yw <= worldTop; yw += stepYMajor){
+        const {py} = worldToScreen(0, yw);
+        if (py < frame.y || py > frame.y + frame.h) continue;
+        ctx.beginPath();
+        ctx.moveTo(frame.x, py);
+        ctx.lineTo(frame.x + frame.w, py);
+        ctx.stroke();
+      }
+
+      if (ui.showLabels){
+        ctx.fillStyle = cssVar("--dim");
+        ctx.font = `11px ${cssVar("--mono")}`;
+        ctx.globalAlpha = 0.95;
+
+        y0 = Math.floor(worldBottom / stepYMajor) * stepYMajor;
+        for (let yw = y0; yw <= worldTop; yw += stepYMajor){
+          const {py} = worldToScreen(0, yw);
+          if (py < frame.y || py > frame.y + frame.h) continue;
+          const label = (Math.abs(yw) >= 1000) ? yw.toFixed(0) : yw.toFixed(2);
+          ctx.fillText(label, frame.x + frame.w + 10, py + 4);
+        }
+
+        const density = view.scaleX > 180 ? 2 : 1;
+        x0 = Math.floor(worldLeft / stepXMajor) * stepXMajor;
+        for (let xw = x0; xw <= worldRight; xw += stepXMajor){
+          const idx = Math.round(xw);
+          if (idx < 0 || idx >= bars.length) continue;
+          const {px} = worldToScreen(xw, 0);
+          if (px < frame.x || px > frame.x + frame.w) continue;
+          ctx.fillText(formatAxisTime(bars[idx].ts, density), px - 18, frame.y + frame.h + 30);
+        }
+      }
+
+      ctx.restore();
+    }
+
+    function clipToFrame(frame){
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(frame.x, frame.y, frame.w, frame.h);
+      ctx.clip();
+    }
+
+    function subCountForZoom(){
+      if (view.scaleX > 220) return 12;
+      if (view.scaleX > 90) return 4;
+      return 1;
+    }
+
+    function subBarsForBar(parentBar, parentIndex, subCount, intervalMs){
+      if (subCount <= 1) return [{
+        idx: parentIndex + 0.5,
+        ts: parentBar.ts + intervalMs/2,
+        ...parentBar
+      }];
+
+      const seed = 1000003 + parentIndex*9176 + Math.floor(parentBar.c*1000);
+      const pr = mulberry32(seed);
+
+      const o0 = parentBar.o;
+      const cN = parentBar.c;
+
+      const path = [];
+      for (let i=0;i<=subCount;i++){
+        const t = i/subCount;
+        const base = lerp(o0, cN, t);
+        const noise = (pr()-0.5) * (Math.abs(parentBar.h-parentBar.l) * 0.18);
+        path.push(base + noise);
+      }
+      path[0] = o0;
+      path[subCount] = cN;
+
+      const subs = [];
+      for (let i=0;i<subCount;i++){
+        const o = path[i];
+        const c = path[i+1];
+        const hi = Math.max(o,c) + Math.abs((pr()-0.5) * (Math.abs(parentBar.h-parentBar.l) * 0.22));
+        const lo = Math.min(o,c) - Math.abs((pr()-0.5) * (Math.abs(parentBar.h-parentBar.l) * 0.22));
+        subs.push({
+          idx: parentIndex + (i + 0.5)/subCount,
+          ts: parentBar.ts + ((i + 0.5)/subCount) * intervalMs,
+          o, c,
+          h: clamp(hi, parentBar.l, parentBar.h),
+          l: clamp(lo, parentBar.l, parentBar.h)
+        });
+      }
+
+      const hiIdx = Math.floor(pr()*subCount);
+      const loIdx = Math.floor(pr()*subCount);
+      subs[hiIdx].h = parentBar.h;
+      subs[loIdx].l = parentBar.l;
+
+      return subs;
+    }
+
+    function drawSeries(frame, bars, mode, intervalMs){
+      clipToFrame(frame);
+
+      const pos = cssVar("--pos");
+      const neg = cssVar("--neg");
+      const mid = cssVar("--mid");
+      const line2 = cssVar("--line2");
+
+      const subCount = subCountForZoom();
+      const bodyPx = clamp(view.scaleX * 0.70 / Math.max(1, subCount), 1.8, 14);
+
+      ctx.save();
+      for (let i=0;i<bars.length;i++){
+        const b = bars[i];
+        const xBase = i;
+        const xS = worldToScreen(xBase, 0).px;
+        if (xS < frame.x - 60 || xS > frame.x + frame.w + 60) continue;
+
+        const subs = subBarsForBar(b, i, subCount, intervalMs);
+
+        for (const sb of subs){
+          const x = sb.idx;
+          const xPx = worldToScreen(x, 0).px;
+
+          const yO = worldToScreen(0, sb.o).py;
+          const yC = worldToScreen(0, sb.c).py;
+          const yH = worldToScreen(0, sb.h).py;
+          const yL = worldToScreen(0, sb.l).py;
+
+          const up = sb.c >= sb.o;
+
+          ctx.strokeStyle = mid;
+          ctx.globalAlpha = 0.26;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(xPx, yH);
+          ctx.lineTo(xPx, yL);
+          ctx.stroke();
+
+          if (mode === "candle"){
+            const top = Math.min(yO,yC);
+            const bot = Math.max(yO,yC);
+            const h = Math.max(1.2, bot-top);
+
+            ctx.fillStyle = up ? pos : neg;
+            ctx.globalAlpha = 0.86;
+            ctx.fillRect(xPx - bodyPx/2, top, bodyPx, h);
+
+            ctx.strokeStyle = line2;
+            ctx.globalAlpha = 0.8;
+            ctx.strokeRect(xPx - bodyPx/2, top, bodyPx, h);
+          } else {
+            ctx.strokeStyle = up ? pos : neg;
+            ctx.globalAlpha = 0.85;
+            ctx.lineWidth = 2;
+
+            ctx.beginPath();
+            ctx.moveTo(xPx - bodyPx/2, yO);
+            ctx.lineTo(xPx, yO);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(xPx, yC);
+            ctx.lineTo(xPx + bodyPx/2, yC);
+            ctx.stroke();
+          }
+        }
+      }
+
+      ctx.restore();
+      ctx.restore();
+    }
+
+    function drawOverlayMemberLines(frame, bars){
+      const inst = datasets[ui.dataset].instruments[ui.instrumentIdx];
+      if (!(ui.dataset === "ofn_budget" && inst.key === "OFN_TOTAL" && ui.compare === "members")) return;
+
+      clipToFrame(frame);
+
+      const pos = cssVar("--pos");
+      const line2 = cssVar("--line2");
+
+      const names = Array.from(derived.ofnMemberLines.keys());
+      const maxLines = 10;
+      const use = names.slice(0, maxLines);
+
+      for (let i=0;i<use.length;i++){
+        const name = use[i];
+        const arr = derived.ofnMemberLines.get(name) || [];
+        if (arr.length < 2) continue;
+
+        const alpha = 0.06 + (0.16 * (1 - i/(maxLines-1)));
+        const yOffset = (i - (maxLines-1)/2) * 0.10;
+        const xOffset = (i - (maxLines-1)/2) * 0.015;
+
+        ctx.save();
+        ctx.strokeStyle = pos;
+        ctx.globalAlpha = alpha;
+        ctx.lineWidth = 2;
+
+        const dash = (i % 3 === 0) ? [6,4] : (i % 3 === 1) ? [2,3] : [];
+        ctx.setLineDash(dash);
+
+        ctx.beginPath();
+        const len = Math.min(arr.length, bars.length);
+        const start = bars.length - len;
+        for (let j=0;j<len;j++){
+          const x = (start + j) + xOffset;
+          const y = arr[arr.length - len + j].v + yOffset;
+          const {px,py} = worldToScreen(x, y);
+          if (j===0) ctx.moveTo(px,py);
+          else ctx.lineTo(px,py);
+        }
+        ctx.stroke();
+
+        ctx.globalAlpha = alpha * 0.45;
+        ctx.setLineDash([]);
+        ctx.strokeStyle = line2;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      ctx.restore();
+    }
+
+    let cross = {x:0,y:0,on:false};
+
+    function drawCrosshair(frame, bars){
+      if (!ui.showCross || !cross.on) return;
+
+      const line = cssVar("--line");
+      const ink = cssVar("--ink");
+
+      ctx.save();
+      ctx.strokeStyle = line;
+      ctx.globalAlpha = 0.55;
+      ctx.setLineDash([6,6]);
+
+      ctx.beginPath();
+      ctx.moveTo(frame.x, cross.y);
+      ctx.lineTo(frame.x + frame.w, cross.y);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(cross.x, frame.y);
+      ctx.lineTo(cross.x, frame.y + frame.h);
+      ctx.stroke();
+
+      ctx.setLineDash([]);
+
+      const w = screenToWorld(cross.x, cross.y);
+      const idx = clamp(Math.floor(w.x), 0, bars.length-1);
+      const ts = bars[idx].ts;
+      const label = `${formatAxisTime(ts, 2)}  |  x=${w.x.toFixed(3)}  y=${w.y.toFixed(6)}`;
+
+      ctx.font = `11px ${cssVar("--mono")}`;
+      const pad = 6;
+      const tx = frame.x + 10;
+      const ty = frame.y + 10;
+      const bw = ctx.measureText(label).width + pad*2;
+      const bh = 18;
+
+      ctx.globalAlpha = 0.92;
+      ctx.fillStyle = "rgba(255,255,255,.70)";
+      ctx.fillRect(tx, ty, bw, bh);
+
+      ctx.globalAlpha = 0.95;
+      ctx.strokeStyle = line;
+      ctx.strokeRect(tx, ty, bw, bh);
+
+      ctx.fillStyle = ink;
+      ctx.globalAlpha = 0.95;
+      ctx.fillText(label, tx + pad, ty + 13);
+
+      ctx.restore();
+    }
+
+    function render(){
+      const ds = datasets[ui.dataset];
+      const inst = ds.instruments[ui.instrumentIdx];
+      initSeries(ui.dataset, inst);
+
+      const obj = store.get(seriesKey(ui.dataset, inst.key));
+      const bars = obj.bars;
+      const frame = drawFrame();
+
+      if (!view.default) setDefaultView(frame, bars);
+
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+
+      drawGrid(frame, bars);
+      drawSeries(frame, bars, ui.mode, obj.intervalMs);
+      drawOverlayMemberLines(frame, bars);
+      drawCrosshair(frame, bars);
+
+      updateHud(bars, inst, ds);
+
+      ctx.save();
+      ctx.strokeStyle = cssVar("--line2");
+      ctx.globalAlpha = 0.95;
+      ctx.strokeRect(frame.x, frame.y, frame.w, frame.h);
+      ctx.restore();
+    }
+
+    function updateHud(bars, inst, ds){
+      const last = bars[bars.length-1];
+      const prev = bars[bars.length-2] ?? last;
+      const d = last.c - prev.c;
+
+      const unit = ds.unit;
+      const decimals =
+        (unit==="rate" && inst.key.includes("JPY")) ? 2 :
+        (unit==="rate") ? 4 : 2;
+
+      const lastStr = unit==="bnFNU" ? `${fmt.n(last.c,2)} bn` : fmt.n(last.c, decimals);
+      const deltaStr = unit==="bnFNU" ? fmt.sign(d,2) : fmt.sign(d, decimals);
+      const volProxy = clamp((Math.abs(last.h-last.l)/Math.max(1e-9,last.c))*100, 0, 99);
+
+      $("#seriesTitle").textContent = `${ds.label} // ${inst.name}`;
+      $("#lastVal").textContent = lastStr;
+      $("#deltaVal").textContent = deltaStr;
+      $("#volVal").textContent = `${fmt.n(volProxy,2)}%`;
+
+      $("#pillMode").textContent = ui.mode === "candle" ? "CANDLE" : "OHLC";
+      $("#pillReg").textContent = `REG: ${engine.s.riskRegime}`;
+
+      $("#pillLive").textContent = engine.frozen ? "FROZEN" : "LIVE";
+      $("#pillLive").style.borderColor = engine.frozen ? "rgba(230,69,69,.55)" : "rgba(46,108,255,.35)";
+      $("#pillData").textContent = `DATA: ${engine.dataStatus}`;
+
+      const b = computeOfnBudget();
+      $("#kStress").textContent = fmt.n(engine.s.stress,0);
+      $("#kLiq").textContent = fmt.n(engine.s.liquidity,0);
+      $("#kPol").textContent = fmt.n(engine.s.policy,2) + "%";
+      $("#kInfl").textContent = fmt.n(engine.s.infl,2) + "%";
+      $("#kOfn").textContent = fmt.n(b.total,2) + " bn";
+
+      const now = new Date();
+      $("#clock").textContent = now.toLocaleString();
+      $("#clockMini").textContent = now.toLocaleTimeString();
+    }
+
+    function resizeCanvasToDisplaySize(){
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+      const w = Math.floor(rect.width * dpr);
+      const h = Math.floor(rect.height * dpr);
+      if (canvas.width !== w || canvas.height !== h){
+        canvas.width = w;
+        canvas.height = h;
+        view.default = null;
+      }
+    }
+
+    function updateCompareVisibility(){
+      const dsKey = ui.dataset;
+      const inst = datasets[dsKey].instruments[ui.instrumentIdx];
+      const show = (dsKey === "ofn_budget" && inst.key === "OFN_TOTAL");
+      $("#compareRow").style.display = show ? "flex" : "none";
+      if (!show) ui.compare = "off";
+      if (show) $("#compareSel").value = ui.compare;
+    }
+
+    function setToggle(el, on){ el.classList.toggle("on", on); }
+
+    $("#gridToggle").addEventListener("click", ()=>{
+      ui.showGrid = !ui.showGrid;
+      setToggle($("#gridToggle"), ui.showGrid);
+      render();
+    });
+
+    $("#labelsToggle").addEventListener("click", ()=>{
+      ui.showLabels = !ui.showLabels;
+      setToggle($("#labelsToggle"), ui.showLabels);
+      render();
+    });
+
+    $("#crossToggle").addEventListener("click", ()=>{
+      ui.showCross = !ui.showCross;
+      setToggle($("#crossToggle"), ui.showCross);
+      render();
+    });
+
+    $("#datasetSel").addEventListener("change", (e)=>{
+      ui.dataset = e.target.value;
+      ui.instrumentIdx = 0;
+      populateInstruments();
+      view.default = null;
+      updateCompareVisibility();
+      hideTooltip();
+      render();
+    });
+
+    $("#instrumentSel").addEventListener("change", (e)=>{
+      ui.instrumentIdx = Number(e.target.value)||0;
+      view.default = null;
+      updateCompareVisibility();
+      hideTooltip();
+      render();
+    });
+
+    $("#modeSel").addEventListener("change", (e)=>{
+      ui.mode = e.target.value;
+      hideTooltip();
+      render();
+    });
+
+    $("#compareSel").addEventListener("change", (e)=>{
+      ui.compare = e.target.value;
+      hideTooltip();
+      render();
+    });
+
+    $("#themeSel").addEventListener("change", (e)=>{
+      const v = e.target.value;
+      if (v === "default") document.documentElement.removeAttribute("data-theme");
+      else document.documentElement.setAttribute("data-theme", v);
+      hideTooltip();
+      render();
+    });
+
+    $("#freezeBtn").addEventListener("click", ()=>{
+      engine.frozen = !engine.frozen;
+      $("#freezeBtn").textContent = engine.frozen ? "Resume (apply updates)" : "Freeze / Resume";
+      if (!engine.frozen){
+        if (engine.pendingTicks > 0){
+          simulateTicks(engine.pendingTicks);
+          engine.pendingTicks = 0;
+        }
+        view.default = null;
+        hideTooltip();
+        render();
+      } else {
+        hideTooltip();
+        render();
+      }
+    });
+
+    const tooltip = $("#tooltip");
+    const ttTitle = $("#ttTitle");
+    const ttBody = $("#ttBody");
+
+    function hideTooltip(){
+      tooltip.style.display = "none";
+    }
+
+    function showTooltip(px, py, title, body){
+      const wrap = $("#canvasWrap").getBoundingClientRect();
+      const maxX = wrap.width - 20;
+      const maxY = wrap.height - 20;
+
+      tooltip.style.display = "block";
+      ttTitle.textContent = title;
+      ttBody.textContent = body;
+
+      const tw = tooltip.offsetWidth || 260;
+      const th = tooltip.offsetHeight || 90;
+
+      let x = px + 14;
+      let y = py + 14;
+      if (x + tw > maxX) x = px - tw - 14;
+      if (y + th > maxY) y = py - th - 14;
+      x = clamp(x, 10, maxX - tw);
+      y = clamp(y, 10, maxY - th);
+
+      tooltip.style.left = x + "px";
+      tooltip.style.top = y + "px";
+    }
+
+    function priceFmt(ds, inst, v){
+      if (ds.unit === "bnFNU") return `${fmt.n(v,2)} bn`;
+      if (ds.unit === "rate" && inst.key.includes("JPY")) return fmt.n(v,2);
+      if (ds.unit === "rate") return fmt.n(v,4);
+      return fmt.n(v,2);
+    }
+
+    function nearestBarAndSub(dsKey, instKey, worldX){
+      const obj = store.get(seriesKey(dsKey, instKey));
+      const bars = obj.bars;
+      const idx = clamp(Math.floor(worldX), 0, bars.length-1);
+
+      const subCount = subCountForZoom();
+      const frac = clamp(worldX - idx, 0, 1);
+      const subIdx = clamp(Math.floor(frac * subCount), 0, subCount-1);
+
+      const subs = subBarsForBar(bars[idx], idx, subCount, obj.intervalMs);
+      const sb = subs[Math.min(subIdx, subs.length-1)];
+
+      return { idx, bar: bars[idx], sub: sb, intervalMs: obj.intervalMs };
+    }
+
+    let dragging = false;
+    let lastMx = 0, lastMy = 0;
+
+    canvas.addEventListener("mousedown", (e)=>{
+      dragging = true;
+      lastMx = e.offsetX * (canvas.width / canvas.clientWidth);
+      lastMy = e.offsetY * (canvas.height / canvas.clientHeight);
+    });
+
+    window.addEventListener("mouseup", ()=> dragging = false);
+
+    window.addEventListener("mousemove", (e)=>{
+      const rect = canvas.getBoundingClientRect();
+      const inside = e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
+
+      if (inside){
+        const mx = (e.clientX - rect.left) * (canvas.width / canvas.clientWidth);
+        const my = (e.clientY - rect.top) * (canvas.height / canvas.clientHeight);
+        cross = {x:mx, y:my, on:true};
+      } else {
+        cross.on = false;
+      }
+
+      if (dragging){
+        const mx = (e.clientX - rect.left) * (canvas.width / canvas.clientWidth);
+        const my = (e.clientY - rect.top) * (canvas.height / canvas.clientHeight);
+
+        const ds = datasets[ui.dataset];
+        const inst = ds.instruments[ui.instrumentIdx];
+        const obj = store.get(seriesKey(ui.dataset, inst.key));
+        const bars = obj.bars;
+        const frame = drawFrame();
+
+        panBy(frame, bars, mx - lastMx, my - lastMy);
+        lastMx = mx; lastMy = my;
+
+        hideTooltip();
+        render();
+      } else if (ui.showCross){
+        render();
+      }
+    });
+
+    canvas.addEventListener("wheel", (e)=>{
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const mx = (e.clientX - rect.left) * (canvas.width / canvas.clientWidth);
+      const my = (e.clientY - rect.top) * (canvas.height / canvas.clientHeight);
+
+      const ds = datasets[ui.dataset];
+      const inst = ds.instruments[ui.instrumentIdx];
+      const obj = store.get(seriesKey(ui.dataset, inst.key));
+      const bars = obj.bars;
+      const frame = drawFrame();
+
+      const delta = Math.sign(e.deltaY);
+      const zoomFactor = delta > 0 ? 0.90 : 1.12;
+      zoomAt(frame, bars, mx, my, zoomFactor);
+
+      hideTooltip();
+      render();
+    }, {passive:false});
+
+    canvas.addEventListener("dblclick", ()=>{
+      const ds = datasets[ui.dataset];
+      const inst = ds.instruments[ui.instrumentIdx];
+      const obj = store.get(seriesKey(ui.dataset, inst.key));
+      const frame = drawFrame();
+
+      resetViewToDefault(frame, obj.bars);
+      hideTooltip();
+      render();
+    });
+
+    $("#resetViewBtn").addEventListener("click", ()=>{
+      const ds = datasets[ui.dataset];
+      const inst = ds.instruments[ui.instrumentIdx];
+      const obj = store.get(seriesKey(ui.dataset, inst.key));
+      const frame = drawFrame();
+
+      resetViewToDefault(frame, obj.bars);
+      hideTooltip();
+      render();
+    });
+
+    canvas.addEventListener("click", (e)=>{
+      const ds = datasets[ui.dataset];
+      const inst = ds.instruments[ui.instrumentIdx];
+      const obj = store.get(seriesKey(ui.dataset, inst.key));
+      const bars = obj.bars;
+      const frame = drawFrame();
+
+      const rect = canvas.getBoundingClientRect();
+      const mx = (e.clientX - rect.left) * (canvas.width / canvas.clientWidth);
+      const my = (e.clientY - rect.top) * (canvas.height / canvas.clientHeight);
+
+      if (!(mx >= frame.x && mx <= frame.x + frame.w && my >= frame.y && my <= frame.y + frame.h)){
+        hideTooltip();
+        return;
+      }
+
+      const w = screenToWorld(mx, my);
+      const info = nearestBarAndSub(ui.dataset, inst.key, w.x);
+
+      const dt = new Date(info.sub.ts);
+      const title = dt.toLocaleString();
+      const body =
+        `${inst.name}\n` +
+        `O  ${priceFmt(ds, inst, info.sub.o)}\n` +
+        `H  ${priceFmt(ds, inst, info.sub.h)}\n` +
+        `L  ${priceFmt(ds, inst, info.sub.l)}\n` +
+        `C  ${priceFmt(ds, inst, info.sub.c)}`;
+
+      const wrapRect = $("#canvasWrap").getBoundingClientRect();
+      const localX = (e.clientX - wrapRect.left);
+      const localY = (e.clientY - wrapRect.top);
+      showTooltip(localX, localY, title, body);
+    });
+
+    window.addEventListener("keydown", (e)=>{
+      if (e.key === "Escape") hideTooltip();
+    });
+
+    function simulateTicks(n){
+      for (let i=0;i<n;i++){
+        stepMacro();
+        for (const dsKey of Object.keys(datasets)){
+          for (const inst of datasets[dsKey].instruments){
+            stepSeries(dsKey, inst);
+          }
+        }
+        updateDerivedOfnMemberLines();
+        engine.t += 1;
+      }
+    }
+
+    function warmup(){
+      simulateTicks(80);
+    }
+
+    function tick(){
+      if (engine.frozen){
+        engine.pendingTicks += 1;
+        return;
+      }
+      simulateTicks(1);
+      render();
+    }
+
+    function ymd(d){
+      const z = (n)=>String(n).padStart(2,"0");
+      return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`;
+    }
+
+    function computeFxPairsFromEurRates(r){
+      const USD = r.USD, GBP = r.GBP, JPY = r.JPY, CHF = r.CHF, CAD = r.CAD, AUD = r.AUD;
+      return {
+        EURUSD: USD,
+        GBPUSD: USD / GBP,
+        USDJPY: JPY / USD,
+        USDCHF: CHF / USD,
+        USDCAD: CAD / USD,
+        AUDUSD: USD / AUD
+      };
+    }
+
+    function buildOhlcFromCloses(closes, datesMs, volatilityScale=0.004){
+      const out = [];
+      for (let i=0;i<closes.length;i++){
+        const c = closes[i];
+        const o = (i===0) ? c : closes[i-1];
+        const mid = (o+c)/2;
+        const amp = Math.max(1e-9, Math.abs(c-o)) + Math.abs(mid)*volatilityScale;
+
+        const seed = 700001 + i*991;
+        const pr = mulberry32(seed);
+
+        const hi = Math.max(o,c) + amp*(0.35 + pr()*0.75);
+        const lo = Math.min(o,c) - amp*(0.35 + pr()*0.75);
+        out.push({ ts: datesMs[i], o, h:hi, l:lo, c });
+      }
+      return out;
+    }
+
+    async function loadRealFx(){
+      try{
+        const end = new Date();
+        const start = new Date(end.getTime() - 1000*60*60*24*90);
+
+        const symbols = ["USD","GBP","JPY","CHF","CAD","AUD"].join(",");
+        const url = `https://api.frankfurter.dev/v1/${ymd(start)}..${ymd(end)}?base=EUR&symbols=${encodeURIComponent(symbols)}`;
+
+        const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) throw new Error("FX fetch failed");
+        const json = await res.json();
+
+        const days = Object.keys(json.rates).sort();
+        if (days.length < 10) throw new Error("FX insufficient history");
+
+        const datesMs = days.map(d => new Date(d + "T00:00:00Z").getTime());
+
+        const pairCloses = { EURUSD:[], GBPUSD:[], USDJPY:[], USDCHF:[], USDCAD:[], AUDUSD:[] };
+        for (const d of days){
+          const rates = json.rates[d];
+          const pairs = computeFxPairsFromEurRates(rates);
+          for (const k of Object.keys(pairCloses)){
+            pairCloses[k].push(pairs[k]);
+          }
+        }
+
+        for (const inst of datasets.fx.instruments){
+          const closes = pairCloses[inst.key];
+          if (!closes || closes.length < 10) continue;
+
+          const ohlc = buildOhlcFromCloses(
+            closes,
+            datesMs,
+            inst.key.includes("JPY") ? 0.0012 : 0.0045
+          );
+
+          const key = seriesKey("fx", inst.key);
+          const pr = mulberry32(baseSeed + inst.key.length*9991);
+
+          store.set(key, {
+            pr,
+            bars: ohlc.slice(-320),
+            last: ohlc[ohlc.length-1].c,
+            liveLocked: true,
+            intervalMs: datasets.fx.intervalMs
+          });
+
+          inst.base = ohlc[ohlc.length-1].c;
+        }
+
+        engine.dataStatus = "LIVE(FX)";
+      } catch (_){
+        engine.dataStatus = "DEMO";
+      }
+      $("#pillData").textContent = `DATA: ${engine.dataStatus}`;
+    }
+
+    function boot(){
+      $("#datasetSel").value = ui.dataset;
+      $("#modeSel").value = ui.mode;
+      populateInstruments();
+
+      setToggle($("#gridToggle"), ui.showGrid);
+      setToggle($("#labelsToggle"), ui.showLabels);
+      setToggle($("#crossToggle"), ui.showCross);
+
+      warmup();
+
+      const onResize = ()=>{
+        resizeCanvasToDisplaySize();
+        view.default = null;
+        hideTooltip();
+        render();
+      };
+      window.addEventListener("resize", onResize);
+      resizeCanvasToDisplaySize();
+
+      updateCompareVisibility();
+      render();
+
+      loadRealFx().finally(()=>{
+        view.default = null;
+        render();
+      });
+
+      setInterval(tick, engine.tickMs);
+    }
+
+    boot();
+  </script>
+</body>
+</html>

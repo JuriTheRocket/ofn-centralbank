@@ -1671,6 +1671,47 @@
       return { idx, bar: bars[idx], sub: sb, intervalMs: obj.intervalMs, subCount };
     }
 
+    const LATEST_URL = "./latest.json";
+
+async function loadLatestJsonSnapshot() {
+  try {
+    const res = await fetch(`${LATEST_URL}?t=${Date.now()}`, { cache: "no-store" });
+    if (!res.ok) throw new Error("latest.json fetch failed");
+    const snap = await res.json();
+
+    // apply MACRO snapshot
+    if (snap.macro) {
+      engine.s.stress = Number(snap.macro.stress ?? engine.s.stress);
+      engine.s.liquidity = Number(snap.macro.liquidity ?? engine.s.liquidity);
+      engine.s.policy = Number(snap.macro.policy_rate ?? engine.s.policy);
+      engine.s.infl = Number(snap.macro.inflation ?? engine.s.infl);
+      engine.s.outputGap = Number(snap.macro.output_gap ?? engine.s.outputGap);
+      engine.s.riskRegime = String(snap.macro.risk_regime ?? engine.s.riskRegime);
+    }
+
+    // apply OFN member list (optional: if you want the JSON to override)
+    if (snap.ofn?.members && Array.isArray(snap.ofn.members) && snap.ofn.members.length) {
+      ofnMembers.length = 0;
+      for (const m of snap.ofn.members) {
+        if (!m?.name) continue;
+        ofnMembers.push({ name: String(m.name), gni: Number(m.gni ?? 0) });
+      }
+    }
+
+    // apply FX (optional override) — sets the “base” close used by nowcast
+    if (snap.fx?.derived_pairs_close) {
+      const pairs = snap.fx.derived_pairs_close;
+      for (const inst of datasets.fx.instruments) {
+        if (pairs[inst.key] != null) inst.base = Number(pairs[inst.key]);
+      }
+    }
+
+    engine.dataStatus = snap.fx ? "LIVE(FX)+LOCAL(JSON)" : "LOCAL(JSON)";
+  } catch (_) {
+    // If latest.json doesn't exist yet or fails, keep current behavior
+  }
+}
+    
     function hitTestObject(frame, dsKey, inst, obj, mx, my){
       const bars = obj.bars;
       const w = screenToWorld(mx, my);
@@ -2014,8 +2055,11 @@
         hideTooltip();
         render();
       });
-
+      
+      await loadLatestJsonSnapshot();
+      setInterval(loadLatestJsonSnapshot, 2 * 60 * 1000);
       setInterval(()=>{
+        
         // Keep FX nowcast in sync with real "now" even if user is just watching
         if (!engine.frozen && engine.dataStatus.startsWith("LIVE")) appendFxNowcastBars();
         tick();
@@ -2026,3 +2070,4 @@
   </script>
 </body>
 </html>
+

@@ -371,7 +371,7 @@
       position:absolute;
       z-index:30;
       display:none;
-      max-width: 320px;
+      max-width: 340px;
       background: rgba(255,255,255,.92);
       border:1px solid var(--line2);
       color: var(--ink);
@@ -519,6 +519,7 @@
             <select id="modeSel">
               <option value="candle">Candlesticks</option>
               <option value="ohlc">OHLC Bars</option>
+              <option value="line">Line</option>
             </select>
           </div>
 
@@ -552,7 +553,7 @@
           <div class="kv">
             <div class="k">Wheel</div><div class="v">Zoom</div>
             <div class="k">Drag</div><div class="v">Pan</div>
-            <div class="k">Click</div><div class="v">Tooltip</div>
+            <div class="k">Click</div><div class="v">Tooltip (objects only)</div>
             <div class="k">Double-click</div><div class="v">Reset view</div>
           </div>
         </div>
@@ -598,7 +599,7 @@
       </div>
 
       <div class="bottomRight">
-        <span class="tiny">Pan is bounded to available history; zoom deeper to reveal intra-bar candles.</span>
+        <span class="tiny">Update cadence: 2 minutes. View is bounded to available history.</span>
       </div>
     </div>
   </div>
@@ -629,8 +630,11 @@
     const baseSeed = 811733;
     let R = mulberry32(baseSeed);
 
+    // 2-minute cadence
+    const UPDATE_MS = 2 * 60 * 1000;
+
     const engine = {
-      tickMs: 900,
+      tickMs: UPDATE_MS,
       frozen: false,
       pendingTicks: 0,
       t: 0,
@@ -689,59 +693,59 @@
     const datasets = {
       fx: {
         label: "Top currencies (FX)", unit:"rate",
-        intervalMs: 24*60*60*1000,
+        intervalMs: UPDATE_MS, // intraday nowcast cadence (anchored to last real close)
         instruments: [
-          { key:"EURUSD", name:"EUR/USD", base:1.085, vol:0.009 },
-          { key:"GBPUSD", name:"GBP/USD", base:1.270, vol:0.010 },
-          { key:"USDJPY", name:"USD/JPY", base:149.0, vol:0.75 },
-          { key:"USDCHF", name:"USD/CHF", base:0.890, vol:0.007 },
-          { key:"USDCAD", name:"USD/CAD", base:1.355, vol:0.009 },
-          { key:"AUDUSD", name:"AUD/USD", base:0.665, vol:0.010 }
+          { key:"EURUSD", name:"EUR/USD", base:1.085, vol:0.0018 },
+          { key:"GBPUSD", name:"GBP/USD", base:1.270, vol:0.0020 },
+          { key:"USDJPY", name:"USD/JPY", base:149.0, vol:0.14 },
+          { key:"USDCHF", name:"USD/CHF", base:0.890, vol:0.0016 },
+          { key:"USDCAD", name:"USD/CAD", base:1.355, vol:0.0018 },
+          { key:"AUDUSD", name:"AUD/USD", base:0.665, vol:0.0021 }
         ]
       },
       gdp: {
         label: "Top GDP (index)", unit:"index",
-        intervalMs: 7*24*60*60*1000,
+        intervalMs: UPDATE_MS,
         instruments: [
-          { key:"USA_GDP", name:"USA GDP Index", base:100, vol:1.6 },
-          { key:"CHN_GDP", name:"China GDP Index", base:100, vol:1.9 },
-          { key:"DEU_GDP", name:"Germany GDP Index", base:100, vol:1.2 },
-          { key:"JPN_GDP", name:"Japan GDP Index", base:100, vol:1.0 },
-          { key:"IND_GDP", name:"India GDP Index", base:100, vol:2.2 }
+          { key:"USA_GDP", name:"USA GDP Index", base:100, vol:0.55 },
+          { key:"CHN_GDP", name:"China GDP Index", base:100, vol:0.70 },
+          { key:"DEU_GDP", name:"Germany GDP Index", base:100, vol:0.45 },
+          { key:"JPN_GDP", name:"Japan GDP Index", base:100, vol:0.42 },
+          { key:"IND_GDP", name:"India GDP Index", base:100, vol:0.80 }
         ]
       },
       ofn_budget: {
         label: "OFN income", unit:"bnFNU",
-        intervalMs: 6*60*60*1000,
+        intervalMs: UPDATE_MS,
         instruments: [
-          { key:"OFN_TOTAL", name:"OFN Total Inflow (bn FNU)", base:78, vol:1.8 },
-          { key:"OFN_GNI",   name:"GNI Contributions (bn FNU)", base:52, vol:1.2 },
-          { key:"OFN_VAT",   name:"VAT Resource (bn FNU)", base:18, vol:0.9 },
-          { key:"OFN_CUS",   name:"Customs Duties (bn FNU)", base:10, vol:0.8 }
+          { key:"OFN_TOTAL", name:"OFN Total Inflow (bn FNU)", base:78, vol:0.35 },
+          { key:"OFN_GNI",   name:"GNI Contributions (bn FNU)", base:52, vol:0.22 },
+          { key:"OFN_VAT",   name:"VAT Resource (bn FNU)", base:18, vol:0.14 },
+          { key:"OFN_CUS",   name:"Customs Duties (bn FNU)", base:10, vol:0.12 }
         ]
       },
       ofn_contrib: {
         label: "OFN contributions", unit:"bnFNU",
-        intervalMs: 6*60*60*1000,
+        intervalMs: UPDATE_MS,
         instruments: [
-          { key:"USA", name:"USA Contribution", base:18, vol:0.6 },
-          { key:"Australia", name:"Australia Contribution", base:4.2, vol:0.25 },
-          { key:"Israel", name:"Israel Contribution", base:2.1, vol:0.18 },
-          { key:"Union of Columbia", name:"Union of Columbia Contribution", base:6.8, vol:0.35 },
-          { key:"Commonwealth of Lander", name:"Commonwealth of Lander Contribution", base:5.6, vol:0.30 },
-          { key:"Greece", name:"Greece Contribution", base:1.4, vol:0.16 },
-          { key:"Philippines", name:"Philippines Contribution", base:1.6, vol:0.18 },
-          { key:"Luxembourg", name:"Luxembourg Contribution", base:0.55, vol:0.06 }
+          { key:"USA", name:"USA Contribution", base:18, vol:0.10 },
+          { key:"Australia", name:"Australia Contribution", base:4.2, vol:0.06 },
+          { key:"Israel", name:"Israel Contribution", base:2.1, vol:0.05 },
+          { key:"Union of Columbia", name:"Union of Columbia Contribution", base:6.8, vol:0.07 },
+          { key:"Commonwealth of Lander", name:"Commonwealth of Lander Contribution", base:5.6, vol:0.07 },
+          { key:"Greece", name:"Greece Contribution", base:1.4, vol:0.04 },
+          { key:"Philippines", name:"Philippines Contribution", base:1.6, vol:0.04 },
+          { key:"Luxembourg", name:"Luxembourg Contribution", base:0.55, vol:0.02 }
         ]
       },
       risk: {
         label: "Risk & conditions", unit:"index",
-        intervalMs: 3*60*60*1000,
+        intervalMs: UPDATE_MS,
         instruments: [
-          { key:"FN_STRESS", name:"System Stress Index (0–100)", base:40, vol:3.0 },
-          { key:"FN_LIQ",    name:"Liquidity Conditions (0–100)", base:70, vol:2.7 },
-          { key:"TRADE",     name:"Global Trade Volume Index", base:100, vol:1.4 },
-          { key:"ENERGY",    name:"Energy Pressure Index", base:100, vol:2.0 }
+          { key:"FN_STRESS", name:"System Stress Index (0–100)", base:40, vol:0.95 },
+          { key:"FN_LIQ",    name:"Liquidity Conditions (0–100)", base:70, vol:0.85 },
+          { key:"TRADE",     name:"Global Trade Volume Index", base:100, vol:0.45 },
+          { key:"ENERGY",    name:"Energy Pressure Index", base:100, vol:0.65 }
         ]
       }
     };
@@ -752,32 +756,32 @@
       const liqN = (s.liquidity - 70) / 60;
 
       let drift = 0;
-      let volBoost = clamp(stressN*0.55 - liqN*0.15, -0.20, 1.00);
-      let wickBoost = clamp(stressN*0.65, 0.0, 1.20);
+      let volBoost = clamp(stressN*0.35 - liqN*0.10, -0.15, 0.70);
+      let wickBoost = clamp(stressN*0.55, 0.0, 1.00);
 
       if (dsKey === "fx"){
-        const usdBias = clamp(stressN*0.0020, -0.003, 0.004);
+        const usdBias = clamp(stressN*0.00045, -0.0006, 0.0008);
         if (instKey.includes("USD") && !instKey.startsWith("USD")) drift -= usdBias;
-        if (instKey.startsWith("USD")) drift += usdBias * 120;
+        if (instKey.startsWith("USD")) drift += usdBias * 28;
       }
 
       if (dsKey === "gdp"){
-        const og = engine.s.outputGap * 0.05;
-        const pol = (engine.s.policy - 2.5) * -0.03;
-        drift += (og + pol) * 0.12;
+        const og = engine.s.outputGap * 0.04;
+        const pol = (engine.s.policy - 2.5) * -0.02;
+        drift += (og + pol) * 0.08;
         wickBoost *= 0.55; volBoost *= 0.55;
       }
 
       if (dsKey === "risk"){
-        if (instKey === "FN_STRESS") { drift += (stressN*0.35); volBoost += 0.25; }
-        if (instKey === "FN_LIQ")    { drift += (-stressN*0.30 + liqN*0.15); }
-        if (instKey === "TRADE")     { drift += (-stressN*0.08 + liqN*0.05); wickBoost *= 0.6; }
-        if (instKey === "ENERGY")    { drift += (stressN*0.10); volBoost += 0.15; }
+        if (instKey === "FN_STRESS") { drift += (stressN*0.15); volBoost += 0.18; }
+        if (instKey === "FN_LIQ")    { drift += (-stressN*0.12 + liqN*0.10); }
+        if (instKey === "TRADE")     { drift += (-stressN*0.03 + liqN*0.02); wickBoost *= 0.6; }
+        if (instKey === "ENERGY")    { drift += (stressN*0.04); volBoost += 0.12; }
       }
 
       if (dsKey === "ofn_budget" || dsKey === "ofn_contrib"){
-        const activity = clamp(1 + (engine.s.outputGap*0.08) + (liqN*0.06) - (stressN*0.10), 0.80, 1.18);
-        drift += (activity-1) * (dsKey === "ofn_contrib" ? 0.18 : 0.35);
+        const activity = clamp(1 + (engine.s.outputGap*0.06) + (liqN*0.05) - (stressN*0.08), 0.86, 1.12);
+        drift += (activity-1) * (dsKey === "ofn_contrib" ? 0.10 : 0.18);
         wickBoost *= 0.65; volBoost *= 0.60;
       }
 
@@ -788,6 +792,10 @@
     const derived = { ofnMemberLines: new Map() };
     const seriesKey = (ds, inst) => ds + "::" + inst;
 
+    function roundDownToCadence(ms){
+      return ms - (ms % UPDATE_MS);
+    }
+
     function initSeries(dsKey, inst){
       const k = seriesKey(dsKey, inst.key);
       if (store.has(k)) return;
@@ -796,11 +804,11 @@
       const pr = mulberry32(seed);
 
       const ds = datasets[dsKey];
-      const now = Date.now();
+      const now = roundDownToCadence(Date.now());
       const bars = [];
       let last = inst.base;
 
-      for (let i=0;i<260;i++){
+      for (let i=0;i<320;i++){
         const macro = macroFactor(dsKey, inst.key);
         const vol = inst.vol * (1 + macro.volBoost);
 
@@ -823,25 +831,25 @@
         const hi = Math.max(o,c) + Math.abs((pr()-0.5) * vol * (1.0 + macro.wickBoost));
         const lo = Math.min(o,c) - Math.abs((pr()-0.5) * vol * (1.0 + macro.wickBoost));
 
-        const ts = now - (260 - 1 - i) * ds.intervalMs;
+        const ts = now - (320 - 1 - i) * ds.intervalMs;
         bars.push({ ts, o, h:hi, l:lo, c });
 
         last = c;
       }
 
-      store.set(k, { pr, bars, last, liveLocked: false, intervalMs: ds.intervalMs });
+      store.set(k, { pr, bars, last, liveLocked: false, intervalMs: ds.intervalMs, sourceHint: "SYNTH" });
     }
 
     function stepSeries(dsKey, inst){
       initSeries(dsKey, inst);
       const k = seriesKey(dsKey, inst.key);
       const obj = store.get(k);
-      if (obj.liveLocked) return;
 
       const pr = obj.pr;
       const bars = obj.bars;
       const macro = macroFactor(dsKey, inst.key);
       const vol = inst.vol * (1 + macro.volBoost);
+
       let lastTarget = obj.last;
 
       if (dsKey === "ofn_budget"){
@@ -858,14 +866,26 @@
       }
 
       const o = obj.last;
-      const delta = (pr()-0.5) * vol + macro.drift*0.35;
-      const c = clamp(lerp(o,lastTarget,0.65) + delta*0.6, inst.base*0.45, inst.base*1.85);
+      const delta = (pr()-0.5) * vol + macro.drift*0.40;
+      const c = clamp(lerp(o,lastTarget,0.65) + delta*0.65, inst.base*0.45, inst.base*1.85);
       const hi = Math.max(o,c) + Math.abs((pr()-0.5) * vol * (0.9 + macro.wickBoost*0.7));
       const lo = Math.min(o,c) - Math.abs((pr()-0.5) * vol * (0.9 + macro.wickBoost*0.7));
 
-      const ts = (bars.length ? bars[bars.length-1].ts + obj.intervalMs : Date.now());
-      bars.push({ ts, o, h:hi, l:lo, c });
+      const now = roundDownToCadence(Date.now());
+      const candidate = (bars.length ? bars[bars.length-1].ts + obj.intervalMs : now);
+      const ts = Math.min(candidate, now); // never in the future
 
+      if (bars.length && ts === bars[bars.length-1].ts){
+        // already have this timestamp slot; nudge the last candle (keeps "no future", avoids duplicates)
+        const b = bars[bars.length-1];
+        b.h = Math.max(b.h, hi);
+        b.l = Math.min(b.l, lo);
+        b.c = c;
+        obj.last = c;
+        return;
+      }
+
+      bars.push({ ts, o, h:hi, l:lo, c });
       obj.last = c;
       if (bars.length>320) bars.shift();
     }
@@ -873,12 +893,18 @@
     function updateDerivedOfnMemberLines(){
       const b = computeOfnBudget();
       const totalGNI = ofnMembers.reduce((a,x)=>a+x.gni,0);
+      const now = roundDownToCadence(Date.now());
       for (const m of ofnMembers){
         const v = b.gniPart * (m.gni/totalGNI);
         if (!derived.ofnMemberLines.has(m.name)) derived.ofnMemberLines.set(m.name, []);
         const arr = derived.ofnMemberLines.get(m.name);
-        arr.push({ ts: Date.now(), v });
-        if (arr.length > 320) arr.shift();
+
+        if (arr.length && arr[arr.length-1].ts === now){
+          arr[arr.length-1].v = v;
+        } else {
+          arr.push({ ts: now, v });
+          if (arr.length > 320) arr.shift();
+        }
       }
     }
 
@@ -916,7 +942,7 @@
 
     function drawFrame(){
       const pad = 14;
-      const rightAxisW = 108;
+      const rightAxisW = 110;
       const bottomAxisH = 54;
       const x = pad;
       const y = pad;
@@ -945,6 +971,30 @@
       return {x,y};
     }
 
+    function computeDynamicMinScaleX(frame, bars){
+      const total = Math.max(2, bars.length);
+      // At minimum zoom-out, the view shows exactly the data window with no extra void.
+      return frame.w / total;
+    }
+
+    function enforceBounds(frame, bars){
+      // enforce minimum zoom-out so user can't "leave the chart" by zooming out
+      const dynMinX = computeDynamicMinScaleX(frame, bars);
+      view.scaleX = clamp(view.scaleX, dynMinX, view.maxScaleX);
+
+      // X pan bounds (no empty left/right space)
+      const lastIdx = bars.length - 1;
+      const worldLeft = (frame.x - view.offsetX) / view.scaleX;
+      const worldRight = (frame.x + frame.w - view.offsetX) / view.scaleX;
+
+      if (worldLeft < 0){
+        view.offsetX = frame.x - 0 * view.scaleX;
+      }
+      if (worldRight > (lastIdx + 1)){
+        view.offsetX = frame.x + frame.w - (lastIdx + 1) * view.scaleX;
+      }
+    }
+
     function setDefaultView(frame, bars){
       const N = bars.length;
       const show = Math.min(160, N);
@@ -962,46 +1012,39 @@
       const worldW = (end - start + 1);
       const worldH = (yMax - yMin);
 
-      view.scaleX = clamp(frame.w / worldW, view.minScaleX, view.maxScaleX);
+      view.scaleX = clamp(frame.w / worldW, computeDynamicMinScaleX(frame, bars), view.maxScaleX);
       view.scaleY = clamp(frame.h / worldH, view.minScaleY, view.maxScaleY);
       view.offsetX = frame.x - start * view.scaleX;
       view.offsetY = frame.y + (yMax * view.scaleY);
 
+      enforceBounds(frame, bars);
+
       view.default = { scaleX:view.scaleX, scaleY:view.scaleY, offsetX:view.offsetX, offsetY:view.offsetY };
-      enforcePanBounds(frame, bars);
       updateResetViewButton(frame, bars);
     }
 
-    function enforcePanBounds(frame, bars){
-      const lastIdx = bars.length - 1;
-      const worldLeft = (frame.x - view.offsetX) / view.scaleX;
-      const worldRight = (frame.x + frame.w - view.offsetX) / view.scaleX;
-
-      if (worldLeft < 0){
-        view.offsetX = frame.x - 0 * view.scaleX;
-      }
-      if (worldRight > (lastIdx + 1)){
-        view.offsetX = frame.x + frame.w - (lastIdx + 1) * view.scaleX;
-      }
-    }
-
     function zoomAt(frame, bars, px, py, zoomFactor){
+      // Stable zoom: lock world-point under cursor, then re-solve offsets
       const before = screenToWorld(px, py);
-      view.scaleX = clamp(view.scaleX * zoomFactor, view.minScaleX, view.maxScaleX);
-      view.scaleY = clamp(view.scaleY * zoomFactor, view.minScaleY, view.maxScaleY);
-      const after = screenToWorld(px, py);
-      view.offsetX += (after.x - before.x) * view.scaleX;
-      view.offsetY -= (after.y - before.y) * view.scaleY;
 
-      enforcePanBounds(frame, bars);
+      const dynMinX = computeDynamicMinScaleX(frame, bars);
+      const newScaleX = clamp(view.scaleX * zoomFactor, dynMinX, view.maxScaleX);
+      const newScaleY = clamp(view.scaleY * zoomFactor, view.minScaleY, view.maxScaleY);
+
+      view.scaleX = newScaleX;
+      view.scaleY = newScaleY;
+
+      view.offsetX = px - before.x * view.scaleX;
+      view.offsetY = py + before.y * view.scaleY;
+
+      enforceBounds(frame, bars);
       updateResetViewButton(frame, bars);
     }
 
     function panBy(frame, bars, dx, dy){
       view.offsetX += dx;
       view.offsetY += dy;
-
-      enforcePanBounds(frame, bars);
+      enforceBounds(frame, bars);
       updateResetViewButton(frame, bars);
     }
 
@@ -1011,7 +1054,7 @@
       view.scaleY = view.default.scaleY;
       view.offsetX = view.default.offsetX;
       view.offsetY = view.default.offsetY;
-      enforcePanBounds(frame, bars);
+      enforceBounds(frame, bars);
       updateResetViewButton(frame, bars);
     }
 
@@ -1041,7 +1084,9 @@
 
     function formatAxisTime(ts, density){
       const d = new Date(ts);
-      if (density >= 2) return d.toLocaleString(undefined,{ month:"short", day:"2-digit", hour:"2-digit", minute:"2-digit" });
+      if (density >= 2){
+        return d.toLocaleString(undefined,{ month:"short", day:"2-digit", hour:"2-digit", minute:"2-digit" });
+      }
       return d.toLocaleDateString(undefined,{ year:"numeric", month:"short", day:"2-digit" });
     }
 
@@ -1184,7 +1229,7 @@
         const lo = Math.min(o,c) - Math.abs((pr()-0.5) * (Math.abs(parentBar.h-parentBar.l) * 0.22));
         subs.push({
           idx: parentIndex + (i + 0.5)/subCount,
-          ts: parentBar.ts + ((i + 0.5)/subCount) * intervalMs,
+          ts: Math.min(parentBar.ts + ((i + 0.5)/subCount) * intervalMs, roundDownToCadence(Date.now())),
           o, c,
           h: clamp(hi, parentBar.l, parentBar.h),
           l: clamp(lo, parentBar.l, parentBar.h)
@@ -1211,17 +1256,50 @@
       const bodyPx = clamp(view.scaleX * 0.70 / Math.max(1, subCount), 1.8, 14);
 
       ctx.save();
+
+      // LINE mode: draw line through closes (densified when zoomed)
+      if (mode === "line"){
+        ctx.globalAlpha = 0.88;
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = pos;
+
+        ctx.beginPath();
+        let started = false;
+
+        for (let i=0;i<bars.length;i++){
+          const b = bars[i];
+          const xS = worldToScreen(i, 0).px;
+          if (xS < frame.x - 60 || xS > frame.x + frame.w + 60) continue;
+
+          const subs = subBarsForBar(b, i, subCount, intervalMs);
+          for (const sb of subs){
+            const p = worldToScreen(sb.idx, sb.c);
+            if (!started){ ctx.moveTo(p.px, p.py); started = true; }
+            else ctx.lineTo(p.px, p.py);
+          }
+        }
+        ctx.stroke();
+
+        ctx.globalAlpha = 0.22;
+        ctx.strokeStyle = line2;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.restore();
+        ctx.restore();
+        return;
+      }
+
+      // Candle/OHLC
       for (let i=0;i<bars.length;i++){
         const b = bars[i];
-        const xBase = i;
-        const xS = worldToScreen(xBase, 0).px;
+        const xS = worldToScreen(i, 0).px;
         if (xS < frame.x - 60 || xS > frame.x + frame.w + 60) continue;
 
         const subs = subBarsForBar(b, i, subCount, intervalMs);
 
         for (const sb of subs){
-          const x = sb.idx;
-          const xPx = worldToScreen(x, 0).px;
+          const xPx = worldToScreen(sb.idx, 0).px;
 
           const yO = worldToScreen(0, sb.o).py;
           const yC = worldToScreen(0, sb.c).py;
@@ -1385,9 +1463,11 @@
 
       const obj = store.get(seriesKey(ui.dataset, inst.key));
       const bars = obj.bars;
+
       const frame = drawFrame();
 
       if (!view.default) setDefaultView(frame, bars);
+      else enforceBounds(frame, bars);
 
       ctx.clearRect(0,0,canvas.width,canvas.height);
 
@@ -1396,7 +1476,7 @@
       drawOverlayMemberLines(frame, bars);
       drawCrosshair(frame, bars);
 
-      updateHud(bars, inst, ds);
+      updateHud(bars, inst, ds, obj);
 
       ctx.save();
       ctx.strokeStyle = cssVar("--line2");
@@ -1405,7 +1485,7 @@
       ctx.restore();
     }
 
-    function updateHud(bars, inst, ds){
+    function updateHud(bars, inst, ds, obj){
       const last = bars[bars.length-1];
       const prev = bars[bars.length-2] ?? last;
       const d = last.c - prev.c;
@@ -1424,11 +1504,14 @@
       $("#deltaVal").textContent = deltaStr;
       $("#volVal").textContent = `${fmt.n(volProxy,2)}%`;
 
-      $("#pillMode").textContent = ui.mode === "candle" ? "CANDLE" : "OHLC";
+      $("#pillMode").textContent =
+        ui.mode === "candle" ? "CANDLE" :
+        ui.mode === "ohlc" ? "OHLC" : "LINE";
       $("#pillReg").textContent = `REG: ${engine.s.riskRegime}`;
 
       $("#pillLive").textContent = engine.frozen ? "FROZEN" : "LIVE";
       $("#pillLive").style.borderColor = engine.frozen ? "rgba(230,69,69,.55)" : "rgba(46,108,255,.35)";
+
       $("#pillData").textContent = `DATA: ${engine.dataStatus}`;
 
       const b = computeOfnBudget();
@@ -1471,13 +1554,11 @@
       setToggle($("#gridToggle"), ui.showGrid);
       render();
     });
-
     $("#labelsToggle").addEventListener("click", ()=>{
       ui.showLabels = !ui.showLabels;
       setToggle($("#labelsToggle"), ui.showLabels);
       render();
     });
-
     $("#crossToggle").addEventListener("click", ()=>{
       ui.showCross = !ui.showCross;
       setToggle($("#crossToggle"), ui.showCross);
@@ -1543,9 +1624,7 @@
     const ttTitle = $("#ttTitle");
     const ttBody = $("#ttBody");
 
-    function hideTooltip(){
-      tooltip.style.display = "none";
-    }
+    function hideTooltip(){ tooltip.style.display = "none"; }
 
     function showTooltip(px, py, title, body){
       const wrap = $("#canvasWrap").getBoundingClientRect();
@@ -1556,8 +1635,8 @@
       ttTitle.textContent = title;
       ttBody.textContent = body;
 
-      const tw = tooltip.offsetWidth || 260;
-      const th = tooltip.offsetHeight || 90;
+      const tw = tooltip.offsetWidth || 280;
+      const th = tooltip.offsetHeight || 98;
 
       let x = px + 14;
       let y = py + 14;
@@ -1589,7 +1668,38 @@
       const subs = subBarsForBar(bars[idx], idx, subCount, obj.intervalMs);
       const sb = subs[Math.min(subIdx, subs.length-1)];
 
-      return { idx, bar: bars[idx], sub: sb, intervalMs: obj.intervalMs };
+      return { idx, bar: bars[idx], sub: sb, intervalMs: obj.intervalMs, subCount };
+    }
+
+    function hitTestObject(frame, dsKey, inst, obj, mx, my){
+      const bars = obj.bars;
+      const w = screenToWorld(mx, my);
+      const info = nearestBarAndSub(dsKey, inst.key, w.x);
+
+      const subCount = info.subCount;
+      const bodyPx = clamp(view.scaleX * 0.70 / Math.max(1, subCount), 1.8, 14);
+
+      const xPx = worldToScreen(info.sub.idx, 0).px;
+      const yH = worldToScreen(0, info.sub.h).py;
+      const yL = worldToScreen(0, info.sub.l).py;
+
+      // Must be inside frame
+      if (!(mx >= frame.x && mx <= frame.x + frame.w && my >= frame.y && my <= frame.y + frame.h)) return null;
+
+      // Object-only rule:
+      // - For candle/ohlc: click must be near the bar column and within high-low range
+      // - For line: must be near the close point
+      if (ui.mode === "line"){
+        const yC = worldToScreen(0, info.sub.c).py;
+        const dist = Math.hypot(mx - xPx, my - yC);
+        if (dist <= 9) return info;
+        return null;
+      } else {
+        const nearX = Math.abs(mx - xPx) <= (bodyPx/2 + 6);
+        const withinY = (my >= Math.min(yH,yL) - 8 && my <= Math.max(yH,yL) + 8);
+        if (nearX && withinY) return info;
+        return null;
+      }
     }
 
     let dragging = false;
@@ -1600,7 +1710,6 @@
       lastMx = e.offsetX * (canvas.width / canvas.clientWidth);
       lastMy = e.offsetY * (canvas.height / canvas.clientHeight);
     });
-
     window.addEventListener("mouseup", ()=> dragging = false);
 
     window.addEventListener("mousemove", (e)=>{
@@ -1616,14 +1725,14 @@
       }
 
       if (dragging){
-        const mx = (e.clientX - rect.left) * (canvas.width / canvas.clientWidth);
-        const my = (e.clientY - rect.top) * (canvas.height / canvas.clientHeight);
-
         const ds = datasets[ui.dataset];
         const inst = ds.instruments[ui.instrumentIdx];
         const obj = store.get(seriesKey(ui.dataset, inst.key));
         const bars = obj.bars;
         const frame = drawFrame();
+
+        const mx = (e.clientX - rect.left) * (canvas.width / canvas.clientWidth);
+        const my = (e.clientY - rect.top) * (canvas.height / canvas.clientHeight);
 
         panBy(frame, bars, mx - lastMx, my - lastMy);
         lastMx = mx; lastMy = my;
@@ -1649,8 +1758,8 @@
 
       const delta = Math.sign(e.deltaY);
       const zoomFactor = delta > 0 ? 0.90 : 1.12;
-      zoomAt(frame, bars, mx, my, zoomFactor);
 
+      zoomAt(frame, bars, mx, my, zoomFactor);
       hideTooltip();
       render();
     }, {passive:false});
@@ -1688,22 +1797,20 @@
       const mx = (e.clientX - rect.left) * (canvas.width / canvas.clientWidth);
       const my = (e.clientY - rect.top) * (canvas.height / canvas.clientHeight);
 
-      if (!(mx >= frame.x && mx <= frame.x + frame.w && my >= frame.y && my <= frame.y + frame.h)){
+      const hit = hitTestObject(frame, ui.dataset, inst, obj, mx, my);
+      if (!hit){
         hideTooltip();
         return;
       }
 
-      const w = screenToWorld(mx, my);
-      const info = nearestBarAndSub(ui.dataset, inst.key, w.x);
-
-      const dt = new Date(info.sub.ts);
+      const dt = new Date(hit.sub.ts);
       const title = dt.toLocaleString();
       const body =
         `${inst.name}\n` +
-        `O  ${priceFmt(ds, inst, info.sub.o)}\n` +
-        `H  ${priceFmt(ds, inst, info.sub.h)}\n` +
-        `L  ${priceFmt(ds, inst, info.sub.l)}\n` +
-        `C  ${priceFmt(ds, inst, info.sub.c)}`;
+        `O  ${priceFmt(ds, inst, hit.sub.o)}\n` +
+        `H  ${priceFmt(ds, inst, hit.sub.h)}\n` +
+        `L  ${priceFmt(ds, inst, hit.sub.l)}\n` +
+        `C  ${priceFmt(ds, inst, hit.sub.c)}`;
 
       const wrapRect = $("#canvasWrap").getBoundingClientRect();
       const localX = (e.clientX - wrapRect.left);
@@ -1729,7 +1836,7 @@
     }
 
     function warmup(){
-      simulateTicks(80);
+      simulateTicks(90);
     }
 
     function tick(){
@@ -1776,6 +1883,47 @@
       return out;
     }
 
+    function appendFxNowcastBars(){
+      // For each FX instrument, extend from last real daily candle up to "now" using 2-minute cadence,
+      // anchored to last close. No future timestamps.
+      const now = roundDownToCadence(Date.now());
+
+      for (const inst of datasets.fx.instruments){
+        const key = seriesKey("fx", inst.key);
+        const obj = store.get(key);
+        if (!obj) continue;
+
+        const bars = obj.bars;
+        if (!bars.length) continue;
+
+        let last = bars[bars.length-1];
+        let ts = last.ts;
+
+        // if last is ahead (shouldn't happen), clamp
+        ts = Math.min(ts, now);
+
+        while (ts + UPDATE_MS <= now){
+          const nextTs = ts + UPDATE_MS;
+          const pr = obj.pr;
+
+          const macro = macroFactor("fx", inst.key);
+          const vol = inst.vol * (1 + macro.volBoost);
+
+          const o = last.c;
+          const delta = (pr()-0.5) * vol + macro.drift*0.35;
+          const c = clamp(o + delta, inst.base*0.60, inst.base*1.60);
+          const hi = Math.max(o,c) + Math.abs((pr()-0.5) * vol * (0.9 + macro.wickBoost*0.6));
+          const lo = Math.min(o,c) - Math.abs((pr()-0.5) * vol * (0.9 + macro.wickBoost*0.6));
+
+          bars.push({ ts: nextTs, o, h:hi, l:lo, c });
+          if (bars.length>320) bars.shift();
+
+          last = bars[bars.length-1];
+          ts = last.ts;
+        }
+      }
+    }
+
     async function loadRealFx(){
       try{
         const end = new Date();
@@ -1815,12 +1963,14 @@
           const key = seriesKey("fx", inst.key);
           const pr = mulberry32(baseSeed + inst.key.length*9991);
 
+          // Store daily as base history; then nowcast will extend intraday (every 2 min) up to now.
           store.set(key, {
             pr,
-            bars: ohlc.slice(-320),
+            bars: ohlc.slice(-240),
             last: ohlc[ohlc.length-1].c,
             liveLocked: true,
-            intervalMs: datasets.fx.intervalMs
+            intervalMs: UPDATE_MS,
+            sourceHint: "LIVE+NOWCAST"
           });
 
           inst.base = ohlc[ohlc.length-1].c;
@@ -1831,6 +1981,9 @@
         engine.dataStatus = "DEMO";
       }
       $("#pillData").textContent = `DATA: ${engine.dataStatus}`;
+      if (engine.dataStatus.startsWith("LIVE")){
+        appendFxNowcastBars();
+      }
     }
 
     function boot(){
@@ -1858,10 +2011,15 @@
 
       loadRealFx().finally(()=>{
         view.default = null;
+        hideTooltip();
         render();
       });
 
-      setInterval(tick, engine.tickMs);
+      setInterval(()=>{
+        // Keep FX nowcast in sync with real "now" even if user is just watching
+        if (!engine.frozen && engine.dataStatus.startsWith("LIVE")) appendFxNowcastBars();
+        tick();
+      }, engine.tickMs);
     }
 
     boot();

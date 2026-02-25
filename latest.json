@@ -1,0 +1,58 @@
+{
+  "generated_at": "2026-02-25T18:40:00Z",
+  "source": "FN-CB Internal Consolidation Feed",
+  "note": "Snapshot values used by the web terminal + Roblox. FX can be real reference rates; OFN values are fictional.",
+
+  "macro": {
+    "risk_regime": "ORDERLY",
+    "stress": 36,
+    "liquidity": 74,
+    "policy_rate": 2.85,
+    "inflation": 2.70,
+    "output_gap": 0.15
+  },
+
+  "ofn": {
+    "currency_unit": "bn FNU",
+    "budget": {
+      "total": 78.25,
+      "gni_part": 52.40,
+      "vat_part": 17.95,
+      "customs_part": 7.90
+    },
+    "members": [
+      { "name": "Luxembourg", "gni": 92.0 },
+      { "name": "Falkland Islands", "gni": 3.2 },
+      { "name": "Israel", "gni": 520.0 },
+      { "name": "USA", "gni": 28000.0 },
+      { "name": "Union of Columbia", "gni": 4200.0 },
+      { "name": "Commonwealth of Lander", "gni": 3100.0 },
+      { "name": "Australia", "gni": 1850.0 },
+      { "name": "Philippines", "gni": 520.0 },
+      { "name": "Greece", "gni": 250.0 },
+      { "name": "Georgia", "gni": 27.0 }
+    ]
+  },
+
+  "fx": {
+    "provider": "frankfurter",
+    "base": "EUR",
+    "date": "2026-02-25",
+    "rates": {
+      "USD": 1.0850,
+      "GBP": 0.8550,
+      "JPY": 160.20,
+      "CHF": 0.9450,
+      "CAD": 1.4680,
+      "AUD": 1.6500
+    },
+    "derived_pairs_close": {
+      "EURUSD": 1.0850,
+      "GBPUSD": 1.2696,
+      "USDJPY": 147.65,
+      "USDCHF": 0.8710,
+      "USDCAD": 1.3530,
+      "AUDUSD": 0.6576
+    }
+  }
+}
